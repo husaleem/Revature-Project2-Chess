@@ -1,0 +1,37 @@
+services:
+  app:
+    build: .
+    container_name: Revature-Project2-Chess
+    env_file:
+      - .env
+    volumes:
+     - .:/Revature-Project2-Chess
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    command: ["uvicorn", "--reload", "--reload-dir", "/app/src", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+  db:
+    image: postgres:15
+    container_name: mydb
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+# we have to have this to persist data between container restarts:
+volumes:
+  postgres_data:
+#This files wires different containers together by providing connections to them, shared env variables, networking setup
