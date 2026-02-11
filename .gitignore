@@ -214,4 +214,11 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+# Environment Varibales
+.env
+
 # End of https://www.toptal.com/developers/gitignore/api/windows,linux,macos,visualstudiocode,pycharm
+poetry.lock
+alembic.ini
+*.pyc
+__pycache__/
