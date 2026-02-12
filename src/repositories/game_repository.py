@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime, date
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from src.repositories.game_repository_protocol import GameRepositoryProtocol
 from src.domain.game import Game, WinState
@@ -23,32 +24,45 @@ class GameRepository(GameRepositoryProtocol):
     def get_all_games(self) -> list[Game]:
         return self.session.query(Game).all()
 
-    def update_game_result(self, game_id: str, result: WinState) -> str:
+    def find_games_by_played_date(self, played_date: date) -> list[Game]:
+        return (
+            self.session.query(Game)
+            .filter(func.date(Game.played_at) == played_date)
+            .all()
+        )
+
+    def find_games_by_result(self, result: WinState) -> list[Game]:
+        return self.session.query(Game).filter(Game.result == result).all()
+
+    def find_games_by_tournament_id(self, tournament_id: str) -> list[Game]:
+        return self.session.query(Game).filter(Game.tournament_id == tournament_id).all()
+
+    def update_game_result(self, game_id: str, result: WinState) -> Game:
         game = self.session.get(Game, game_id)
         if not game:
             raise Exception("Game not found")
         game.result = result
         self.session.commit()
         self.session.refresh(game)
-        return f"Updated result in game_id: {game.game_id} to {result}"
+        return game
 
-    def update_game_tournament_id(self, game_id: str, new_tournament_id: str) -> str:
+    def update_game_tournament_id(self, game_id: str, new_tournament_id: str) -> Game:
         game = self.session.get(Game, game_id)
         if not game:
             raise Exception("Game not found")
         game.tournament_id = new_tournament_id
         self.session.commit()
         self.session.refresh(game)
-        return f"Updated tournament_id in game_id: {game.game_id} to {new_tournament_id}"
+        return game
 
-    def update_game_played_at(self, game_id: str, newDate: datetime) -> str:
+    def update_game_played_at(self, game_id: str, newDate: datetime) -> Game:
         game = self.session.get(Game, game_id)
         if not game:
             raise Exception("Game not found")
         game.played_at = newDate
         self.session.commit()
         self.session.refresh(game)
-        return f"Updated played_at in game_id: {game.game_id} to {newDate.isoformat()}"
+        return game
 
     def delete_game_by_id(self, game_id: str) -> str:
         game = self.session.get(Game, game_id)
