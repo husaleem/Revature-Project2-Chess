@@ -16,7 +16,7 @@ class WinState(str, PyEnum):
     DRAW = "DRAW"
 
 class Game(Base):
-    __tablename__ = "books"
+    __tablename__ = "games"
 
     game_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4())
     tournament_id = Column(UUID(as_uuid=True), nullable=False)
