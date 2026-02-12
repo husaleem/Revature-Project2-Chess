@@ -1,6 +1,7 @@
 from uuid import UUID
 from fastapi import Depends, FastAPI, Query
 from sqlalchemy.orm import Session
+from datetime import datetime, date
 
 # DB
 from src.db.dependencies import get_db
@@ -11,6 +12,11 @@ from src.DTO.player import PlayerCreate, PlayerRead
 from src.repositories.player_repository import PlayerRepository
 from src.services.player_service import PlayerService
 
+#Game dependencies
+from src.domain.game import Game, WinState
+from src.DTO.game import GameCreate, GameRead
+from src.repositories.game_repository import GameRepository
+from src.services.game_service import GameService
 
 app = FastAPI(title="Chess Tournament API")
 
@@ -19,12 +25,18 @@ app = FastAPI(title="Chess Tournament API")
 def get_player_repository(db: Session = Depends(get_db)) -> PlayerRepository:
     return PlayerRepository(db)
 
+def get_game_repository(db: Session = Depends(get_db)) -> GameRepository:
+    return GameRepository(db)
+
 
 # -- Services --
 def get_player_service(
     repo: PlayerRepository = Depends(get_player_repository),
 ) -> PlayerService:
     return PlayerService(repo)
+
+def get_game_service(repo: GameRepository = Depends(get_game_repository)) -> GameService:
+    return GameService(repo)
 
 
 # -- Endpoints --
@@ -109,3 +121,49 @@ def update_rating_by_id_players(player_id: str, rating: int):
 def delete_by_id_players(player_id: str):
     svc = PlayerService(Depends(get_player_service))
     return svc.delete_by_id(player_id)
+
+
+# -- Game Post Endpoints (Create)
+@app.post("/games/add", response_model= str)
+def add_game(payload: GameCreate,svc = GameService(Depends(get_game_service))):
+    game = Game(**payload.model_dump())
+    return svc.add_game(game)
+
+# -- Game Get Endpoints (Read)
+@app.get("/games/all", response_model=list[GameRead])
+def get_all_games(svc = GameService(Depends(get_game_service))):
+    return svc.get_all_games()
+
+@app.get("/game/id", response_model=GameRead)
+def get_all_games(game_id: str, svc = GameService(Depends(get_game_service))):
+    return svc.find_game_by_id(game_id)
+
+@app.get("/games/date", response_model=list[GameRead])
+def get_games_on_date(date: date, svc = GameService(Depends(get_game_service))):
+    return svc.find_games_by_played_date(date)
+
+@app.get("/games/result", response_model=list[GameRead])
+def get_games_on_date(result: WinState, svc = GameService(Depends(get_game_service))):
+    return svc.find_games_by_result(result)
+
+@app.get("/games/tournament", response_model=list[GameRead])
+def get_games_by_tournament(tournament_id: str, svc = GameService(Depends(get_game_service))):
+    return svc.find_games_by_tournament_id(tournament_id)
+
+# -- Game Patch Endpoints (Update)
+@app.patch("/game/update/result", response_model=GameRead)
+def update_game_result(game_id: str, result: WinState, svc = GameService(Depends(get_game_service))):
+    return svc.update_game_result(game_id, result)
+
+@app.patch("/game/update/date", response_model=GameRead)
+def update_game_result(game_id: str, date: datetime, svc = GameService(Depends(get_game_service))):
+    return svc.update_game_played_at(game_id, date)
+
+@app.patch("/game/update/tournament", response_model=GameRead)
+def update_game_result(game_id: str, tournament_id: str, svc = GameService(Depends(get_game_service))):
+    return svc.update_game_tournament_id(game_id, tournament_id)
+
+# -- Game Delete Endpoints (Delete) --
+@app.delete("/game/delete", response_model=str)
+def delete_game(game_id: str, svc = GameService(Depends(get_game_service))):
+    return svc.delete_game_by_id(game_id)
