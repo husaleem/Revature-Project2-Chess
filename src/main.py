@@ -28,4 +28,19 @@ def get_player_service(
 
 
 # -- Endpoints --
-# -- Player Endpoints --
+# -- Player Post Endpoints (Create) --
+# -- Player Get Endpoints (Read) --
+@app.get("/players/all", response_model=list[PlayerRead])
+def get_all_players():
+    svc = PlayerService(Depends(get_player_service))
+    return svc.get_all()
+
+
+@app.get("/players/by-first-name/{first_name}")
+def get_by_first_name_players(first_name: str):
+    svc = PlayerService(Depends(get_player_service))
+    return svc.get_by_first_name(first_name)
+
+
+# -- Player Patch Endpoints (Update) --
+# -- Player Delete Endpoints (Delete) --
