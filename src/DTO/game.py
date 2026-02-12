@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 from pydantic import BaseModel
-from src.DTO.game import WinState
+from src.domain.game import WinState
 
 class GameCreate(BaseModel):
     tournament_id: UUID
