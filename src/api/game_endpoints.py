@@ -20,34 +20,34 @@ def get_game_service(
 
 
 # -- Game Post Endpoints (Create)
-@router.post("/games/add", response_model=str)
+@router.post("/add", response_model=str)
 def add_game(payload: GameCreate, svc: GameService = Depends(get_game_service)):
     game = Game(**payload.model_dump())
     return svc.add_game(game)
 
 
 # -- Game Get Endpoints (Read)
-@router.get("/games/all", response_model=list[GameRead])
+@router.get("/all", response_model=list[GameRead])
 def get_all_games(svc: GameService = Depends(get_game_service)):
     return svc.get_all_games()
 
 
-@router.get("/games/id", response_model=GameRead)
+@router.get("/id", response_model=GameRead)
 def get_game_by_id(game_id: str, svc: GameService = Depends(get_game_service)):
     return svc.find_game_by_id(game_id)
 
 
-@router.get("/games/date", response_model=list[GameRead])
+@router.get("/date", response_model=list[GameRead])
 def get_games_on_date(SearchDate: date, svc: GameService = Depends(get_game_service)):
     return svc.find_games_by_played_date(SearchDate)
 
 
-@router.get("/games/result", response_model=list[GameRead])
+@router.get("/result", response_model=list[GameRead])
 def get_games_by_result(result: WinState, svc: GameService = Depends(get_game_service)):
     return svc.find_games_by_result(result)
 
 
-@router.get("/games/tournament", response_model=list[GameRead])
+@router.get("/tournament", response_model=list[GameRead])
 def get_games_by_tournament(
     tournament_id: str, svc: GameService = Depends(get_game_service)
 ):
@@ -55,21 +55,21 @@ def get_games_by_tournament(
 
 
 # -- Game Patch Endpoints (Update)
-@router.patch("/games/update/result", response_model=GameRead)
+@router.patch("/update/result", response_model=GameRead)
 def update_game_result(
     game_id: str, result: WinState, svc: GameService = Depends(get_game_service)
 ):
     return svc.update_game_result(game_id, result)
 
 
-@router.patch("/games/update/date", response_model=GameRead)
+@router.patch("/update/date", response_model=GameRead)
 def update_game_date(
     game_id: str, NewDate: datetime, svc: GameService = Depends(get_game_service)
 ):
     return svc.update_game_played_at(game_id, NewDate)
 
 
-@router.patch("/games/update/tournament", response_model=GameRead)
+@router.patch("/update/tournament", response_model=GameRead)
 def update_game_tournament(
     game_id: str, tournament_id: str, svc: GameService = Depends(get_game_service)
 ):
