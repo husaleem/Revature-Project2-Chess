@@ -14,10 +14,15 @@ class TournamentRepository(TournamentRepositoryProtocol):
     def get_tournament_by_id(self, tournament_id: UUID) -> Tournament | None:
         return self.session.get(Tournament, tournament_id)
     
-    def add_tournament(self, tournament: Tournament) -> str:
-        self.session.add(tournament)
-        self.session.commit()
-        return str(f'Tournament with id {tournament.tournament_id} added successfully.')
+    def add_tournament(self, tournament: Tournament) -> Tournament:
+        try:
+            self.session.add(tournament)
+            self.session.commit()
+            self.session.refresh(tournament)
+            return tournament
+        except Exception:
+            self.session.rollback()
+            raise Exception("Error adding tournament: invalid tournament data.")
     
     def update_tournament(self, tournament: Tournament) -> Tournament:
         self.session.commit()
@@ -26,8 +31,6 @@ class TournamentRepository(TournamentRepositoryProtocol):
         
     def delete_tournament(self, tournament_id: UUID) -> None:
         tournament = self.session.get(Tournament, tournament_id)
-        if not tournament:
-            raise Exception(f'Tournament with id {tournament_id} not found.')
         self.session.delete(tournament)
         self.session.commit()
         

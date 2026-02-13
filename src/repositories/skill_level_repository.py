@@ -1,10 +1,10 @@
 from sqlalchemy.orm import Session
-
+from sqlalchemy.exc import IntegrityError
 from src.domain.skill_level import SkillLevel
 from src.repositories.skill_level_repository_protocol import SkillLevelRepositoryProtocol
 
 
-class SQLSkillLevelRepository(SkillLevelRepositoryProtocol):
+class SkillLevelRepository(SkillLevelRepositoryProtocol):
     def __init__(self, session: Session):
         self.session = session
 
@@ -16,21 +16,31 @@ class SQLSkillLevelRepository(SkillLevelRepositoryProtocol):
         return self.session.query(SkillLevel).filter(SkillLevel.title == title).first()
 
     def add_skill_level(self, skill_level: SkillLevel) -> str:
-        self.session.add(skill_level)
-        self.session.commit()
-        return str(skill_level.title)
+        try:
+            self.session.add(skill_level)
+            self.session.commit()
+            return str(skill_level.title)
+        except IntegrityError:
+            self.session.rollback()
+            raise Exception(f"Skill level with title {skill_level.title} already exists.")
 
     def update_skill_level(self, skill_level: SkillLevel) -> SkillLevel:
-        self.session.commit()
-        self.session.refresh(skill_level)
-        return skill_level
+        try:
+            self.session.commit()
+            self.session.refresh(skill_level)
+            return skill_level
+        except:
+            self.session.rollback()
+            raise Exception("Could not update skill level due to a database constraint.")
 
     def delete_skill_level(self, title: str) -> None:
-        skill_level = self.session.get(SkillLevel, title)
-        if not skill_level:
-            raise Exception("Skill level not found.")
-        self.session.delete(skill_level)
-        self.session.commit()
+        try:
+            skill_level = self.session.get(SkillLevel, title)
+            self.session.delete(skill_level)
+            self.session.commit()
+        except:
+            self.session.rollback()
+            raise Exception("Could not delete skill level due to a database constraint.")
 
         
     #more methods might be added...
