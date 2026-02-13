@@ -5,7 +5,6 @@ from .tournament import Tournament
 from .mentorship import Mentorship
 from .violation import Violation
 
-
 __all__ = [
     "Game",
     "Player",

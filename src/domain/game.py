@@ -1,6 +1,6 @@
 import uuid
 from enum import Enum as PyEnum
-from sqlalchemy import Column, String, Integer, Float, Boolean, Enum, TIMESTAMP
+from sqlalchemy import Column, String, Integer, Float, Boolean, Enum, TIMESTAMP, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from src.base import Base
 
@@ -21,9 +21,9 @@ class Game(Base):
     __tablename__ = "games"
 
     game_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4())
-    tournament_id = Column(UUID(as_uuid=True), nullable=False)
-    player_white_id = Column(UUID(as_uuid=True), nullable=True)
-    player_black_id = Column(UUID(as_uuid=True), nullable=True)
+    tournament_id = Column(UUID(as_uuid=True), ForeignKey('tournaments.tournament_id'), nullable=False)
+    player_white_id = Column(UUID(as_uuid=True), ForeignKey('players.player_id'), nullable=True)
+    player_black_id = Column(UUID(as_uuid=True), ForeignKey('players.player_id'), nullable=True)
     result = Column(Enum(WinState, name="win_state"), nullable=True)
     played_at = Column(TIMESTAMP(timezone=True), nullable=True)
 
