@@ -161,6 +161,19 @@ def get_games_on_date(result: WinState, svc = GameService(Depends(get_game_servi
 def get_games_by_tournament(tournament_id: str, svc = GameService(Depends(get_game_service))):
     return svc.find_games_by_tournament_id(tournament_id)
 
+@app.get("/games/player/white", response_model=list[GameRead])
+def get_games_by_player_white(player_white_id: str, svc = GameService(Depends(get_game_service))):
+    return svc.find_games_by_player_white_id(player_white_id)
+
+@app.get("/games/player/black", response_model=list[GameRead])
+def get_games_by_player_black(player_black_id: str, svc = GameService(Depends(get_game_service))):
+    return svc.find_games_by_player_black_id(player_black_id)
+
+@app.get("/games/player", response_model=list[GameRead])
+def get_games_by_player(player_id: str, svc = GameService(Depends(get_game_service))):
+    return svc.find_games_by_player_id(player_id)
+
+
 # -- Game Patch Endpoints (Update)
 @app.patch("/game/update/result", response_model=GameRead)
 def update_game_result(game_id: str, result: WinState, svc = GameService(Depends(get_game_service))):
@@ -173,6 +186,14 @@ def update_game_result(game_id: str, date: datetime, svc = GameService(Depends(g
 @app.patch("/game/update/tournament", response_model=GameRead)
 def update_game_result(game_id: str, tournament_id: str, svc = GameService(Depends(get_game_service))):
     return svc.update_game_tournament_id(game_id, tournament_id)
+
+@app.patch("/game/update/player-white", response_model=GameRead)
+def update_game_player_white(game_id: str, player_white_id: str, svc = GameService(Depends(get_game_service))):
+    return svc.update_game_player_white_id(game_id, player_white_id)
+
+@app.patch("/game/update/player-black", response_model=GameRead)
+def update_game_player_black(game_id: str, player_black_id: str, svc = GameService(Depends(get_game_service))):
+    return svc.update_game_player_black_id(game_id, player_black_id)
 
 # -- Game Delete Endpoints (Delete) --
 @app.delete("/game/delete", response_model=str)

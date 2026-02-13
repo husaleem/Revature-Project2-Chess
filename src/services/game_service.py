@@ -38,26 +38,59 @@ class GameService:
             raise ValueError(f"Expected type (str), but received ({type(tournament_id)})")
         return self.repo.find_games_by_tournament_id(tournament_id)
 
-    def update_game_result(self, game_id: str, result: WinState) -> Game:
+    def find_games_by_player_white_id(self, player_white_id: str) -> list[Game]:
+        if not isinstance(player_white_id, str):
+            raise ValueError(f"Expected type (str), but received ({type(player_white_id)})")
+        return self.repo.find_games_by_player_white_id(player_white_id)
+
+    def find_games_by_player_black_id(self, player_black_id: str) -> list[Game]:
+        if not isinstance(player_black_id, str):
+            raise ValueError(f"Expected type (str), but received ({type(player_black_id)})")
+        return self.repo.find_games_by_player_black_id(player_black_id)
+
+    def find_games_by_player_id(self, player_id: str) -> list[Game]:
+        if not isinstance(player_id, str):
+            raise ValueError(f"Expected type (str), but received ({type(player_id)})")
+        return self.repo.find_games_by_player_id(player_id)
+
+    def update_game_result(self, game_id: str, result: WinState) -> Game | None:
         if not isinstance(game_id, str):
             raise ValueError(f"Expected type (str) for game_id, but received ({type(game_id)})")
         if not isinstance(result, WinState):
             raise ValueError(f"Expected type (WinState) for result, but received ({type(result)})")
         return self.repo.update_game_result(game_id, result)
 
-    def update_game_tournament_id(self, game_id: str, new_tournament_id: str) -> Game:
+    def update_game_tournament_id(self, game_id: str, new_tournament_id: str) -> Game | None:
         if not isinstance(game_id, str):
             raise ValueError(f"Expected type (str) for game_id, but received ({type(game_id)})")
         if not isinstance(new_tournament_id, str):
             raise ValueError(f"Expected type (str) for new_tournament_id, but received ({type(new_tournament_id)})")
         return self.repo.update_game_tournament_id(game_id, new_tournament_id)
 
-    def update_game_played_at(self, game_id: str, newDate: datetime) -> Game:
+    def update_game_played_at(self, game_id: str, newDate: datetime) -> Game | None:
         if not isinstance(game_id, str):
             raise ValueError(f"Expected type (str) for game_id, but received ({type(game_id)})")
         if not isinstance(newDate, datetime):
             raise ValueError(f"Expected type (datetime) for newDate, but received ({type(newDate)})")
         return self.repo.update_game_played_at(game_id, newDate)
+
+    def update_game_player_white_id(self, game_id: str, new_player_white_id: str) -> Game | None:
+        if not isinstance(game_id, str):
+            raise ValueError(f"Expected type (str) for game_id, but received ({type(game_id)})")
+        if not isinstance(new_player_white_id, str):
+            raise ValueError(
+                f"Expected type (str) for new_player_white_id, but received ({type(new_player_white_id)})"
+            )
+        return self.repo.update_game_player_white_id(game_id, new_player_white_id)
+
+    def update_game_player_black_id(self, game_id: str, new_player_black_id: str) -> Game | None:
+        if not isinstance(game_id, str):
+            raise ValueError(f"Expected type (str) for game_id, but received ({type(game_id)})")
+        if not isinstance(new_player_black_id, str):
+            raise ValueError(
+                f"Expected type (str) for new_player_black_id, but received ({type(new_player_black_id)})"
+            )
+        return self.repo.update_game_player_black_id(game_id, new_player_black_id)
 
     def delete_game_by_id(self, game_id: str) -> str:
         if not isinstance(game_id, str):
