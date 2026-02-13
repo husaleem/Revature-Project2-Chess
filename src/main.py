@@ -1,7 +1,14 @@
 from uuid import UUID
-from fastapi import Depends, FastAPI, Query
+from fastapi import Depends, FastAPI, Query, Request, HTTPException
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
+<<<<<<< HEAD
 from datetime import datetime, date
+=======
+from src.domain.exceptions import NotFoundError, ConflictError, ValidationError, AppError
+from src.logging_config import setup_logging
+import logging
+>>>>>>> hussys-branch
 
 # DB
 from src.db.dependencies import get_db
@@ -17,9 +24,16 @@ from src.domain.game import Game, WinState
 from src.DTO.game import GameCreate, GameRead
 from src.repositories.game_repository import GameRepository
 from src.services.game_service import GameService
+# Tournament Dependencies
+from src.api.tournament_endpoints import router as tournament_router
+# Skill Level Dependencies
+from src.api.skill_level_endpoints import router as skill_level_router
 
 app = FastAPI(title="Chess Tournament API")
 
+setup_logging()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)  # Set to DEBUG for more detailed logs
 
 # -- Repositories --
 def get_player_repository(db: Session = Depends(get_db)) -> PlayerRepository:
@@ -123,6 +137,7 @@ def delete_by_id_players(player_id: str):
     return svc.delete_by_id(player_id)
 
 
+<<<<<<< HEAD
 # -- Game Post Endpoints (Create)
 @app.post("/games/add", response_model= str)
 def add_game(payload: GameCreate,svc = GameService(Depends(get_game_service))):
@@ -167,3 +182,73 @@ def update_game_result(game_id: str, tournament_id: str, svc = GameService(Depen
 @app.delete("/game/delete", response_model=str)
 def delete_game(game_id: str, svc = GameService(Depends(get_game_service))):
     return svc.delete_game_by_id(game_id)
+=======
+#
+#
+#       Tournaments Endpoints
+#
+#
+app.include_router(tournament_router)
+#
+#
+#       Skill Levels Endpoints
+#
+#
+app.include_router(skill_level_router)
+#
+#
+#       Global Exception Handler
+#
+#
+@app.exception_handler(NotFoundError)
+async def not_found_handler(request: Request, exc: NotFoundError):
+    logger.warning(f"NotFoundError: {exc}")
+    return JSONResponse(
+        status_code=404,
+        content={"detail": str(exc)},
+    )
+
+@app.exception_handler(ConflictError)
+async def conflict_handler(request: Request, exc: ConflictError):
+    logger.warning(f"ConflictError: {exc}")
+    return JSONResponse(
+        status_code=409,
+        content={"detail": str(exc)},
+    )
+
+@app.exception_handler(ValidationError)
+async def validation_handler(request: Request, exc: ValidationError):
+    logger.warning(f"ValidationError: {exc}")
+    return JSONResponse(
+        status_code=400,
+        content={"detail": str(exc)},
+    )
+
+@app.exception_handler(AppError)
+async def app_error_handler(request: Request, exc: AppError):
+    # fallback for any other custom app errors
+    logger.error(f"AppError: {exc}")
+    return JSONResponse(
+        status_code=400,
+        content={"detail": str(exc)},
+    )
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    # FastAPI / Starlette built-in HTTP errors
+    logger.error(f"HTTPException {exc.status_code}: {exc.detail}")
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+    )
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    # Last-resort catch-all
+    logger.exception(f"Unhandled Exception: {exc}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error"},
+    )
+>>>>>>> hussys-branch

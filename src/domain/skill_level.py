@@ -14,9 +14,9 @@ class SkillLevel(Base):
     
         # Table-level constraints
     __table_args__ = (
-        CheckConstraint("rating_lower >= 0", name="ck_skill_lower_nonnegative"),
-        CheckConstraint("rating_upper >= 0", name="ck_skill_upper_nonnegative"),
-        CheckConstraint("rating_lower <= rating_upper", name="ck_skill_valid_range"),
+        CheckConstraint("rating_lower_bound >= 0", name="ck_skill_lower_nonnegative"),
+        CheckConstraint("rating_upper_bound >= 0", name="ck_skill_upper_nonnegative"),
+        CheckConstraint("rating_lower_bound <= rating_upper_bound", name="ck_skill_valid_range"),
     )
     
     

@@ -1,16 +1,16 @@
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class SkillLevelCreate(BaseModel):
+    title: str = Field(..., min_length=1, max_length=50)
+    rating_lower_bound: int = Field(..., ge=0)
+    rating_upper_bound: int = Field(..., ge=0)
+
+class SkillLevelRead(BaseModel):
     title: str
     rating_lower_bound: int
     rating_upper_bound: int
-    
-class SkillLevelRead(BaseModel):
-    title = str
-    rating_lower_bound: int
-    rating_upper_bound: int
-    
+
     class Config:
         from_attributes = True
         fields = {
@@ -20,7 +20,6 @@ class SkillLevelRead(BaseModel):
         }   
 
 class SkillLevelUpdate(BaseModel):
-    title: Optional[str] = None
-    rating_lower_bound: Optional[int] = None
-    rating_upper_bound: Optional[int] = None
-    
+    title: Optional[str] = Field(None, min_length=1, max_length=50)
+    rating_lower_bound: Optional[int] = Field(None, ge=0)
+    rating_upper_bound: Optional[int] = Field(None, ge=0)
