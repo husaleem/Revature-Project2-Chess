@@ -37,6 +37,13 @@ from src.api.tournament_endpoints import router as tournament_router
 # Skill Level Dependencies
 from src.api.skill_level_endpoints import router as skill_level_router
 
+#Game_player Dependecies
+from src.services.game_player_service import GamePlayerService
+from src.DTO.game_player import GamePlayerCreate, GamePlayerResponse
+from src.db.dependencies import get_db
+
+
+
 app = FastAPI(title="Chess Tournament API")
 
 setup_logging()
@@ -313,3 +320,20 @@ async def global_exception_handler(request: Request, exc: Exception):
         status_code=500,
         content={"detail": "Internal server error"},
     )
+#Game_player End points
+game_player_service = GamePlayerService()
+
+@app.post("/game-players", response_model=GamePlayerResponse)
+def create_game_player(dto: GamePlayerCreate, db: Session = Depends(get_db)):
+    return game_player_service.create_game_player(db, dto)
+
+@app.get("/game-players", response_model=list[GamePlayerResponse])
+def get_all_game_players(db: Session = Depends(get_db)):
+    return game_player_service.get_all_game_players(db)
+
+@app.delete("/game-players/{game_id}/{player_id}")
+def delete_game_player(game_id: int, player_id: int, db: Session = Depends(get_db)):
+    gp = game_player_service.delete_game_player(db, game_id, player_id)
+    if not gp:
+        raise HTTPException(status_code=404, detail="Game_Player not found")
+    return {"message": "Deleted successfully"}

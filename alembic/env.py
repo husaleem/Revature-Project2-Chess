@@ -13,6 +13,7 @@ from src.settings import settings
 import src.domain  # ensures models are imported/registered
 from src.base import Base
 
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
