@@ -1,6 +1,7 @@
 from uuid import UUID
 from fastapi import Depends, FastAPI, Query
 from sqlalchemy.orm import Session
+from datetime import datetime, date
 
 # DB
 from src.db.dependencies import get_db
@@ -11,6 +12,11 @@ from src.DTO.player import PlayerCreate, PlayerRead
 from src.repositories.player_repository import PlayerRepository
 from src.services.player_service import PlayerService
 
+#Game dependencies
+from src.domain.game import Game, WinState
+from src.DTO.game import GameCreate, GameRead
+from src.repositories.game_repository import GameRepository
+from src.services.game_service import GameService
 
 app = FastAPI(title="Chess Tournament API")
 
@@ -19,6 +25,9 @@ app = FastAPI(title="Chess Tournament API")
 def get_player_repository(db: Session = Depends(get_db)) -> PlayerRepository:
     return PlayerRepository(db)
 
+def get_game_repository(db: Session = Depends(get_db)) -> GameRepository:
+    return GameRepository(db)
+
 
 # -- Services --
 def get_player_service(
@@ -26,9 +35,19 @@ def get_player_service(
 ) -> PlayerService:
     return PlayerService(repo)
 
+def get_game_service(repo: GameRepository = Depends(get_game_repository)) -> GameService:
+    return GameService(repo)
+
 
 # -- Endpoints --
 # -- Player Post Endpoints (Create) --
+@app.post("/players/add", response_model=str)
+def create_player(payload: PlayerCreate):
+    svc = PlayerService(Depends(get_player_service))
+    player = Player(**payload.model_dump())
+    return svc.add(player)
+
+
 # -- Player Get Endpoints (Read) --
 @app.get("/players/all", response_model=list[PlayerRead])
 def get_all_players():
@@ -36,11 +55,115 @@ def get_all_players():
     return svc.get_all()
 
 
-@app.get("/players/by-first-name/{first_name}")
+@app.get("/players/search/by-first-name", response_model=list[PlayerRead])
 def get_by_first_name_players(first_name: str):
     svc = PlayerService(Depends(get_player_service))
     return svc.get_by_first_name(first_name)
 
 
+@app.get("/players/search/by-last-name", response_model=list[PlayerRead])
+def get_by_last_name_players(last_name: str):
+    svc = PlayerService(Depends(get_player_service))
+    return svc.get_by_last_name(last_name)
+
+
+@app.get("/players/search/by-full-name", response_model=list[PlayerRead])
+def get_by_full_name_players(first_name: str, last_name: str):
+    svc = PlayerService(Depends(get_player_service))
+    return svc.get_by_full_name(first_name, last_name)
+
+
+@app.get("/players/search/by-rating", response_model=list[PlayerRead])
+def get_by_rating_players(rating: int):
+    svc = PlayerService(Depends(get_player_service))
+    return svc.get_by_rating(rating)
+
+
+@app.get("/players/search/by-rating-range", response_model=list[PlayerRead])
+def get_by_rating_range_players(rating_lower: int, rating_upper: int):
+    svc = PlayerService(Depends(get_player_service))
+    return svc.get_by_rating_range(rating_lower, rating_upper)
+
+
+@app.get("/players/search/by-id", response_model=PlayerRead)
+def get_by_id_players(player_id: str):
+    svc = PlayerService(Depends(get_player_service))
+    return svc.get_by_id(player_id)
+
+
 # -- Player Patch Endpoints (Update) --
+@app.patch("/players/update/first-name", response_model=PlayerRead)
+def update_first_name_by_id_players(player_id: str, first_name: str):
+    svc = PlayerService(Depends(get_player_service))
+    return svc.update_first_name_by_id(player_id, first_name)
+
+
+@app.patch("/players/update/last-name", response_model=PlayerRead)
+def update_last_name_by_id_players(player_id: str, last_name: str):
+    svc = PlayerService(Depends(get_player_service))
+    return svc.update_last_name_by_id(player_id, last_name)
+
+
+@app.patch("/players/update/full-name", response_model=PlayerRead)
+def update_full_name_by_id_players(player_id: str, first_name: str, last_name: str):
+    svc = PlayerService(Depends(get_player_service))
+    return svc.update_full_name_by_id(player_id, first_name, last_name)
+
+
+@app.patch("/players/update/rating", response_model=PlayerRead)
+def update_rating_by_id_players(player_id: str, rating: int):
+    svc = PlayerService(Depends(get_player_service))
+    return svc.update_rating_by_id(player_id, rating)
+
+
 # -- Player Delete Endpoints (Delete) --
+@app.delete("/players/remove", response_model=PlayerRead)
+def delete_by_id_players(player_id: str):
+    svc = PlayerService(Depends(get_player_service))
+    return svc.delete_by_id(player_id)
+
+
+# -- Game Post Endpoints (Create)
+@app.post("/games/add", response_model= str)
+def add_game(payload: GameCreate,svc = GameService(Depends(get_game_service))):
+    game = Game(**payload.model_dump())
+    return svc.add_game(game)
+
+# -- Game Get Endpoints (Read)
+@app.get("/games/all", response_model=list[GameRead])
+def get_all_games(svc = GameService(Depends(get_game_service))):
+    return svc.get_all_games()
+
+@app.get("/game/id", response_model=GameRead)
+def get_all_games(game_id: str, svc = GameService(Depends(get_game_service))):
+    return svc.find_game_by_id(game_id)
+
+@app.get("/games/date", response_model=list[GameRead])
+def get_games_on_date(date: date, svc = GameService(Depends(get_game_service))):
+    return svc.find_games_by_played_date(date)
+
+@app.get("/games/result", response_model=list[GameRead])
+def get_games_on_date(result: WinState, svc = GameService(Depends(get_game_service))):
+    return svc.find_games_by_result(result)
+
+@app.get("/games/tournament", response_model=list[GameRead])
+def get_games_by_tournament(tournament_id: str, svc = GameService(Depends(get_game_service))):
+    return svc.find_games_by_tournament_id(tournament_id)
+
+# -- Game Patch Endpoints (Update)
+@app.patch("/game/update/result", response_model=GameRead)
+def update_game_result(game_id: str, result: WinState, svc = GameService(Depends(get_game_service))):
+    return svc.update_game_result(game_id, result)
+
+@app.patch("/game/update/date", response_model=GameRead)
+def update_game_result(game_id: str, date: datetime, svc = GameService(Depends(get_game_service))):
+    return svc.update_game_played_at(game_id, date)
+
+@app.patch("/game/update/tournament", response_model=GameRead)
+def update_game_result(game_id: str, tournament_id: str, svc = GameService(Depends(get_game_service))):
+    return svc.update_game_tournament_id(game_id, tournament_id)
+
+# -- Game Delete Endpoints (Delete) --
+@app.delete("/game/delete", response_model=str)
+def delete_game(game_id: str, svc = GameService(Depends(get_game_service))):
+    return svc.delete_game_by_id(game_id)
