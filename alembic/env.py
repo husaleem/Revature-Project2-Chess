@@ -12,6 +12,9 @@ load_dotenv()
 from src.settings import settings
 import src.domain  # ensures models are imported/registered
 from src.base import Base
+#GamePlayer import is needed for alembic to recognize the table and create it in the database
+from src.domain.game_player import GamePlayer
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
