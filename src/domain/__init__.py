@@ -4,6 +4,7 @@ from .skill_level import SkillLevel
 from .tournament import Tournament
 from .mentorship import Mentorship
 from .violation import Violation
+from .game_player import GamePlayer
 
 __all__ = [
     "Game",
@@ -11,5 +12,6 @@ __all__ = [
     "SkillLevel",
     "Tournament",
     "Mentorship",
-    "Violation"
+    "Violation",
+    "GamePlayer"
 ]
