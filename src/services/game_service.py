@@ -15,7 +15,10 @@ class GameService:
     def find_game_by_id(self, game_id: str) -> Game:
         if not isinstance(game_id, str):
             raise ValueError(f"Expected type (str), but received ({type(game_id)})")
-        return self.repo.find_game_by_id(game_id)
+        game = self.repo.find_game_by_id(game_id)
+        if not game:
+            raise Exception("Book not found")
+        return game
 
     def get_all_games(self) -> list[Game]:
         return self.repo.get_all_games()
