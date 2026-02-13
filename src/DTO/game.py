@@ -7,10 +7,14 @@ class GameCreate(BaseModel):
     tournament_id: UUID
     result: WinState
     played_at: datetime
+    player_white_id: UUID
+    player_black_id: UUID
 
 class GameRead(GameCreate):
     game_id: UUID
     tournament_id: UUID
+    player_white_id: UUID
+    player_black_id: UUID
 
     class Config:
         from_attributes = True

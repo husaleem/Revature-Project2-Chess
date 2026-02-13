@@ -11,7 +11,7 @@ services:
         condition: service_healthy
     ports:
       - "8000:8000"
-    command: ["uvicorn", "--reload", "--reload-dir", "/app/src", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    command: ["uvicorn", "--reload", "--reload-dir", "/Revature-Project2-Chess/src", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
   db:
     image: postgres:15
