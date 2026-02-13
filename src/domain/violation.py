@@ -20,7 +20,7 @@ class Violation(Base):
     # MUST match current Game table name in main ("books")
     game_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("books.game_id"),
+        ForeignKey("games.game_id"),
         nullable=False,
     )
 
