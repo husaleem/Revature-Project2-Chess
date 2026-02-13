@@ -2,13 +2,10 @@ from uuid import UUID
 from fastapi import Depends, FastAPI, Query, Request, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-<<<<<<< HEAD
 from datetime import datetime, date
-=======
 from src.domain.exceptions import NotFoundError, ConflictError, ValidationError, AppError
 from src.logging_config import setup_logging
 import logging
->>>>>>> hussys-branch
 
 # DB
 from src.db.dependencies import get_db
@@ -137,7 +134,6 @@ def delete_by_id_players(player_id: str):
     return svc.delete_by_id(player_id)
 
 
-<<<<<<< HEAD
 # -- Game Post Endpoints (Create)
 @app.post("/games/add", response_model= str)
 def add_game(payload: GameCreate,svc = GameService(Depends(get_game_service))):
@@ -182,7 +178,6 @@ def update_game_result(game_id: str, tournament_id: str, svc = GameService(Depen
 @app.delete("/game/delete", response_model=str)
 def delete_game(game_id: str, svc = GameService(Depends(get_game_service))):
     return svc.delete_game_by_id(game_id)
-=======
 #
 #
 #       Tournaments Endpoints
@@ -251,4 +246,3 @@ async def global_exception_handler(request: Request, exc: Exception):
         status_code=500,
         content={"detail": "Internal server error"},
     )
->>>>>>> hussys-branch
