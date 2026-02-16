@@ -23,7 +23,7 @@ from src.api.player_endpoints import router as player_router
 from src.api.game_endpoints import router as game_router
 
 # Mentorship Dependencies
-from src.api.mentorship_router import router as mentorship_router
+from src.api.mentorship_endpoints import router as mentorship_router
 
 # Tournament Dependencies
 from src.api.tournament_endpoints import router as tournament_router
