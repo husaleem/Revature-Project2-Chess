@@ -13,6 +13,9 @@ class TournamentRepository(TournamentRepositoryProtocol):
     
     def get_tournament_by_id(self, tournament_id: UUID) -> Tournament | None:
         return self.session.get(Tournament, tournament_id)
+
+    def get_tournament_by_name(self, name: str) -> Tournament | None:
+        return self.session.get(Tournament, name)
     
     def add_tournament(self, tournament: Tournament) -> Tournament:
         try:
