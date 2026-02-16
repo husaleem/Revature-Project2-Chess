@@ -20,10 +20,9 @@ class WinState(str, PyEnum):
 class Game(Base):
     __tablename__ = "games"
 
-    game_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4())
+    game_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     tournament_id = Column(UUID(as_uuid=True), ForeignKey('tournaments.tournament_id'), nullable=False)
     player_white_id = Column(UUID(as_uuid=True), ForeignKey('players.player_id'), nullable=True)
     player_black_id = Column(UUID(as_uuid=True), ForeignKey('players.player_id'), nullable=True)
     result = Column(Enum(WinState, name="win_state"), nullable=True)
     played_at = Column(TIMESTAMP(timezone=True), nullable=True)
-

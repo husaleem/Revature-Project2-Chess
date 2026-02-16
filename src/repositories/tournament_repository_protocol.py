@@ -10,6 +10,9 @@ class TournamentRepositoryProtocol(Protocol):
     def get_tournament_by_id(self, tournament_id: UUID) -> Tournament | None:
         ...
         
+    def get_tournament_by_name(self, name: str) -> Tournament | None:
+        ...
+
     def add_tournament(self, tournament: Tournament) -> str:
         ...
         

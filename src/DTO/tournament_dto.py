@@ -35,6 +35,18 @@ class TournamentRead(BaseModel):
             "location": ...,
         }
         
+class TournamentParticipantRead(BaseModel):
+    player_id: UUID
+    first_name: str
+    last_name: str
+    rating: int | None
+    wins: int
+    losses: int
+    draws: int
+
+    class Config:
+        from_attributes = True
+
 class TournamentUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     start_date: Optional[date] = None

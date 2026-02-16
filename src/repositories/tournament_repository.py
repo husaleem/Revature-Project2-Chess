@@ -37,7 +37,7 @@ def player_stats() -> tuple[Label[Any], Label[Any], Label[Any]]:
     draws = func.sum(
         case((draw_as_any, 1), else_=0)
     ).label("draws")
-    return draws, losses, wins
+    return wins, losses, draws
 
 
 class TournamentRepository(TournamentRepositoryProtocol):
@@ -47,11 +47,15 @@ class TournamentRepository(TournamentRepositoryProtocol):
     def get_all_tournaments(self) -> list[Tournament]:
         return self.session.query(Tournament).all()
     
-    def get_tournament_by_id(self, tournament_id: UUID) -> Tournament | None:
+    def get_tournament_by_id(self, tournament_id: str) -> Tournament | None:
         return self.session.get(Tournament, tournament_id)
 
     def get_tournament_by_name(self, name: str) -> Tournament | None:
-        return self.session.get(Tournament, name)
+        return (
+            self.session.query(Tournament)
+            .filter(Tournament.name == name)
+            .one_or_none()
+        )
 
     def add_tournament(self, tournament: Tournament) -> Tournament:
         try:
@@ -74,9 +78,7 @@ class TournamentRepository(TournamentRepositoryProtocol):
         self.session.commit()
 
     def get_participants_by_tournament_id(self, tournament_id: str):
-
-
-        wins, losses ,draws = player_stats()
+        wins, losses, draws = player_stats()
 
         results = (
             self.session.query(
@@ -85,15 +87,19 @@ class TournamentRepository(TournamentRepositoryProtocol):
                 losses,
                 draws
             )
-            .join(Game, or_(Game.player_white_id == Player.player_id,Game.player_black_id == Player.player_id))
+            .join(Game, or_(Game.player_white_id == Player.player_id, Game.player_black_id == Player.player_id))
             .filter(Game.tournament_id == tournament_id)
             .group_by(Player.player_id, Player.first_name, Player.last_name, Player.rating)
             .all()
         )
-        return results
 
-
-
+        players: list[Player] = []
+        for player, wins_value, losses_value, draws_value in results:
+            player.wins = int(wins_value or 0)
+            player.losses = int(losses_value or 0)
+            player.draws = int(draws_value or 0)
+            players.append(player)
+        return players
 
     def get_participants_by_tournament_name(self, name: str):
         tournament = self.get_tournament_by_name(name)
