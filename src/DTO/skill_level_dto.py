@@ -1,5 +1,5 @@
 from typing import Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 class SkillLevelCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=50)
@@ -20,6 +20,8 @@ class SkillLevelRead(BaseModel):
         }   
 
 class SkillLevelUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    
     title: Optional[str] = Field(None, min_length=1, max_length=50)
     rating_lower_bound: Optional[int] = Field(None, ge=0)
     rating_upper_bound: Optional[int] = Field(None, ge=0)

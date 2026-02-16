@@ -2,7 +2,7 @@ from datetime import date
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel, Field, ValidationInfo, field_validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator, ConfigDict
 
 class TournamentCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
@@ -36,6 +36,8 @@ class TournamentRead(BaseModel):
         }
         
 class TournamentUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     start_date: Optional[date] = None
     end_date: Optional[date] = None

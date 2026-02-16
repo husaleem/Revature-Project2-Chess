@@ -9,7 +9,7 @@ class SkillLevelRepository(SkillLevelRepositoryProtocol):
         self.session = session
 
     def get_all_skill_levels(self) -> list[SkillLevel]:
-        return self.session.query(SkillLevel).all()
+        return self.session.query(SkillLevel).order_by(SkillLevel.rating_upper_bound.desc()).all()
 
     def get_skill_level_by_title(self, title: str) -> SkillLevel | None:
         # You can also do: return self.session.get(SkillLevel, title)
