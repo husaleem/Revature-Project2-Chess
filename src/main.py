@@ -1,6 +1,7 @@
 from uuid import UUID
 from fastapi import Depends, FastAPI, Query, Request, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 
@@ -44,6 +45,16 @@ from src.db.dependencies import get_db
 
 
 app = FastAPI(title="Chess Tournament API")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",  # Vite dev server
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 setup_logging()
 logger = logging.getLogger(__name__)
