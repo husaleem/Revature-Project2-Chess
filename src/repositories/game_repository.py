@@ -1,8 +1,14 @@
+import math
 from datetime import datetime, date
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
+
+from src.api.game_endpoints import add_game
 from src.repositories.game_repository_protocol import GameRepositoryProtocol
 from src.domain.game import Game, WinState
+from src.domain.tournament import Tournament
+from src.domain.player import Player
+from src.repositories.tournament_repository import TournamentRepository
 
 class GameRepository(GameRepositoryProtocol):
     def __init__(self, session: Session):
@@ -100,3 +106,30 @@ class GameRepository(GameRepositoryProtocol):
         self.session.delete(game)
         self.session.commit()
         return f"Deleted game_id: {game.game_id}"
+
+    def generate_match_bracket(self, tournament_id: str):
+        # check if there are at least 2^n players and just create an empty games based on the amount
+        players = (
+            self.session.query(Player)
+             .join(Game, or_(Game.player_white_id == Player.player_id,Game.player_black_id == Player.player_id))
+             .filter(Game.tournament_id == tournament_id)
+             .group_by(Player.player_id, Player.first_name, Player.last_name, Player.rating)
+             .all()
+            )
+        player_count = len(players)
+        if player_count < 2:
+            raise ValueError("At least two players are required before generating a bracket.")
+
+        max_power = 2 ** math.floor(math.log2(player_count))
+        if max_power == player_count:
+            bracket_size = max(2, max_power // 2)
+        else:
+            bracket_size = max_power
+        selected_players = players[:bracket_size]
+
+        for i in range(0, len(selected_players), 2):
+            white = selected_players[i]
+            black = selected_players[i + 1]
+            game = Game(tournament_id=tournament_id, player_white_id=white.player_id, player_black_id=black.player_id)
+            self.session.add(game)
+        self.session.commit()

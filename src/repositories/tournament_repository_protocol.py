@@ -21,6 +21,7 @@ class TournamentRepositoryProtocol(Protocol):
 
     def get_participants_by_tournament_id(self, tournament_id: str): ...
 
+    def get_participants_by_tournament_name(self, name: str): ...
     #Might add if I have more time
         
     #def get_tournaments_by_player_id(self, player_id: UUID) -> list[Tournament]:

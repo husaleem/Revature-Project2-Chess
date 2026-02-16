@@ -1,10 +1,43 @@
+from typing import Any
 from uuid import UUID
-from sqlalchemy import func, case, or_, and_
+from sqlalchemy import func, case, or_, and_, Label
 from sqlalchemy.orm import Session
 from src.domain.tournament import Tournament
 from src.domain.player import Player
 from src.domain.game import Game, WinState
 from src.repositories.tournament_repository_protocol import TournamentRepositoryProtocol
+
+
+def player_stats() -> tuple[Label[Any], Label[Any], Label[Any]]:
+    is_white = Game.player_white_id == Player.player_id
+    is_black = Game.player_black_id == Player.player_id
+    participated = or_(is_white, is_black)
+
+    white_win = Game.result == WinState.WHITE_WIN
+    black_win = Game.result == WinState.BLACK_WIN
+
+    won_as_white = and_(is_white, white_win)
+    won_as_black = and_(is_black, black_win)
+    lost_as_white = and_(is_white, black_win)
+    lost_as_black = and_(is_black, white_win)
+    draw_as_any = and_(participated, Game.result == WinState.DRAW)
+
+    wins = func.sum(
+        case((won_as_white, 1),
+             (won_as_black, 1),
+             else_=0)
+    ).label("wins")
+
+    losses = func.sum(
+        case((lost_as_white, 1),
+             (lost_as_black, 1),
+             else_=0)
+    ).label("losses")
+
+    draws = func.sum(
+        case((draw_as_any, 1), else_=0)
+    ).label("draws")
+    return draws, losses, wins
 
 
 class TournamentRepository(TournamentRepositoryProtocol):
@@ -41,35 +74,13 @@ class TournamentRepository(TournamentRepositoryProtocol):
         self.session.commit()
 
     def get_participants_by_tournament_id(self, tournament_id: str):
-        is_white = Game.player_white_id == Player.player_id
-        is_black = Game.player_black_id == Player.player_id
 
-        wins = func.sum(
-            case((and_(is_white, Game.result == WinState.WHITE_WIN), 1),
-            (and_(is_black, Game.result == WinState.BLACK_WIN), 1),
-            else_=0
-        )
-        ).label("wins")
 
-        losses = func.sum(
-            case((and_(is_white, Game.result == WinState.BLACK_WIN), 1),
-            (and_(is_black, Game.result == WinState.WHITE_WIN), 1),
-            else_=0
-        )
-        ).label("losses")
-
-        draws = func.sum(
-            case((and_(or_(is_white, is_black), Game.result == WinState.DRAW), 1),
-            else_=0
-        )
-        ).label("draws")
+        wins, losses ,draws = player_stats()
 
         results = (
             self.session.query(
-                Player.player_id,
-                Player.first_name,
-                Player.last_name,
-                Player.rating,
+                Player,
                 wins,
                 losses,
                 draws
@@ -79,19 +90,10 @@ class TournamentRepository(TournamentRepositoryProtocol):
             .group_by(Player.player_id, Player.first_name, Player.last_name, Player.rating)
             .all()
         )
+        return results
 
-        return [
-            {
-                "player_id": str(row.player_id),
-                "first_name": row.first_name,
-                "last_name": row.last_name,
-                "rating": row.rating,
-                "wins": int(row.wins or 0),
-                "losses": int(row.losses or 0),
-                "draws": int(row.draws or 0)
-            }
-            for row in results
-        ]
+
+
 
     def get_participants_by_tournament_name(self, name: str):
         tournament = self.get_tournament_by_name(name)
