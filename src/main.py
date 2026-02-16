@@ -21,17 +21,10 @@ from src.api.mentorship_endpoints import router as mentorship_router
 from src.api.tournament_endpoints import router as tournament_router
 from src.api.skill_level_endpoints import router as skill_level_router
 from src.api.violation_endpoints import router as violation_router
-<<<<<<< HEAD
-=======
-from src.api.relations_endpoints import router as relations_router  # from main branch
->>>>>>> ee30da1 (Resolve merge conflict in main.py)
 
 # Game_player Dependencies
 from src.services.game_player_service import GamePlayerService
 from src.DTO.game_player import GamePlayerCreate, GamePlayerResponse
-
-# Relations Dependiencies
-from src.api.relations_endpoints import router as relations_router
 
 
 app = FastAPI(title="Chess Tournament API")
@@ -40,20 +33,13 @@ setup_logging()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-
 # -- Routers --
 app.include_router(game_router)
 app.include_router(tournament_router)
 app.include_router(skill_level_router)
 app.include_router(player_router)
 app.include_router(mentorship_router)
-<<<<<<< HEAD
 app.include_router(violation_router)
-app.include_router(relations_router)
-=======
-app.include_router(violation_router)     # yours
-app.include_router(relations_router)     # from main
->>>>>>> ee30da1 (Resolve merge conflict in main.py)
 
 
 #

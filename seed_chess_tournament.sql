@@ -5,6 +5,7 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 BEGIN;
 
 TRUNCATE TABLE
+    violations,
     games,
     players,
     tournaments,
@@ -36,28 +37,28 @@ INSERT INTO tournaments (tournament_id, name, start_date, end_date, location) VA
 
 -- Player roster with ratings that fit USCF bands
 INSERT INTO players (first_name, last_name, rating) VALUES
-    ('Yurii',   'Koval',        2460),
-    ('Joseph',  'Wallace',      2235),
-    ('Hussnain','Saleem',       2380),
-    ('Ronald',  'Forte',        1930),
-    ('Wedad',   'Mourtada',     1885),
-    ('Eva',     'Patel',        1625),
-    ('Seth',    'Loyd',         2055),
-    ('Amit',    'Deshpande',    1770),
-    ('Navdeep', 'Natt',         1685),
-    ('Brian',   'Tokumoto',     1820),
-    ('Denis',   'Dudkin',       2320),
-    ('Ethan',   'Wilson',       1345),
-    ('Juan',    'Martinez',     1510),
-    ('Keene',   'Lu',            960),
-    ('Kevin',   'Wonder',       1185),
-    ('Leon',    'Zeltser',      1440),
-    ('Liam',    'O Neil',       1595),
-    ('Michael', 'Chen',         1715),
-    ('Nurul',   'Hussain',      1080),
-    ('Tega',    'Omarejedje',    920),
-    ('Ryan',    'Zimmerman',     705),
-    ('Kelvin',  'Green',         540);
+    ('Yurii',   'Koval',         2460),
+    ('Joseph',  'Wallace',       2235),
+    ('Hussnain','Saleem',        2380),
+    ('Ronald',  'Forte',         1930),
+    ('Wedad',   'Mourtada',      1885),
+    ('Eva',     'Patel',         1625),
+    ('Seth',    'Loyd',          2055),
+    ('Amit',    'Deshpande',     1770),
+    ('Navdeep', 'Natt',          1685),
+    ('Brian',   'Tokumoto',      1820),
+    ('Denis',   'Dudkin',        2320),
+    ('Ethan',   'Wilson',        1345),
+    ('Juan',    'Martinez',      1510),
+    ('Keene',   'Lu',             960),
+    ('Kevin',   'Wonder',        1185),
+    ('Leon',    'Zeltser',       1440),
+    ('Liam',    'O Neil',        1595),
+    ('Michael', 'Chen',          1715),
+    ('Nurul',   'Hussain',       1080),
+    ('Tega',    'Omarejedje',     920),
+    ('Ryan',    'Zimmerman',      705),
+    ('Kelvin',  'Green',          540);
 
 -- Manual games per tournament
 INSERT INTO games (game_id, tournament_id, player_white_id, player_black_id, result, played_at) VALUES
@@ -121,5 +122,31 @@ INSERT INTO games (game_id, tournament_id, player_white_id, player_black_id, res
         (SELECT player_id FROM players WHERE first_name = 'Yurii' AND last_name = 'Koval' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Hussnain' AND last_name = 'Saleem' LIMIT 1),
         'DRAW',      TIMESTAMPTZ '2026-07-23 11:00:00-04');
+
+INSERT INTO violations (violation_id, player_id, game_id, violation_type, violation_date, consequence) VALUES
+    (
+        gen_random_uuid(),
+        (SELECT player_id FROM players WHERE first_name = 'Yurii' AND last_name = 'Koval' LIMIT 1),
+        (SELECT game_id
+         FROM games
+         WHERE player_white_id = (SELECT player_id FROM players WHERE first_name = 'Yurii' AND last_name = 'Koval' LIMIT 1)
+           AND player_black_id = (SELECT player_id FROM players WHERE first_name = 'Joseph' AND last_name = 'Wallace' LIMIT 1)
+         LIMIT 1),
+        'Illegal Move',
+        TIMESTAMPTZ '2026-04-05 10:45:00-05',
+        'Warning issued'
+    ),
+    (
+        gen_random_uuid(),
+        (SELECT player_id FROM players WHERE first_name = 'Navdeep' AND last_name = 'Natt' LIMIT 1),
+        (SELECT game_id
+         FROM games
+         WHERE player_white_id = (SELECT player_id FROM players WHERE first_name = 'Navdeep' AND last_name = 'Natt' LIMIT 1)
+           AND player_black_id = (SELECT player_id FROM players WHERE first_name = 'Brian' AND last_name = 'Tokumoto' LIMIT 1)
+         LIMIT 1),
+        'Time Forfeit',
+        TIMESTAMPTZ '2026-05-10 14:45:00-04',
+        'Game declared loss'
+    );
 
 COMMIT;
