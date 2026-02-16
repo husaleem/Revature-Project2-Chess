@@ -31,10 +31,13 @@ from src.api.tournament_endpoints import router as tournament_router
 # Skill Level Dependencies
 from src.api.skill_level_endpoints import router as skill_level_router
 
-# Game_player Dependecies
+# Game_player Dependencies
 from src.services.game_player_service import GamePlayerService
 from src.DTO.game_player import GamePlayerCreate, GamePlayerResponse
 from src.db.dependencies import get_db
+
+# Relations Dependiencies
+from src.api.relations_endpoints import router as relations_router
 
 
 app = FastAPI(title="Chess Tournament API")
@@ -75,6 +78,12 @@ app.include_router(player_router)
 #
 #
 app.include_router(mentorship_router)
+#
+#
+#       Relations Endpoints
+#
+#
+app.include_router(relations_router)
 
 
 #
