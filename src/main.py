@@ -1,8 +1,7 @@
-from uuid import UUID
-from fastapi import Depends, FastAPI, Query, Request, HTTPException
+from fastapi import Depends, FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-
+import logging
 
 from src.domain.exceptions import (
     NotFoundError,
@@ -11,135 +10,79 @@ from src.domain.exceptions import (
     AppError,
 )
 from src.logging_config import setup_logging
-import logging
 
 # DB
 from src.db.dependencies import get_db
 
-# Player Dependencies
+# Routers
 from src.api.player_endpoints import router as player_router
-
-# Game dependencies
 from src.api.game_endpoints import router as game_router
-
-# Mentorship Dependencies
 from src.api.mentorship_endpoints import router as mentorship_router
-
-# Tournament Dependencies
 from src.api.tournament_endpoints import router as tournament_router
-
-# Skill Level Dependencies
 from src.api.skill_level_endpoints import router as skill_level_router
+from src.api.violation_endpoints import router as violation_router  # ✅ ADDED
 
-# Game_player Dependecies
+# Game_player Dependencies
 from src.services.game_player_service import GamePlayerService
 from src.DTO.game_player import GamePlayerCreate, GamePlayerResponse
-from src.db.dependencies import get_db
 
 
 app = FastAPI(title="Chess Tournament API")
 
 setup_logging()
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)  # Set to DEBUG for more detailed logs
+logger.setLevel(logging.DEBUG)
 
 
-# -- Endpoints --
-#
-#
-#       Games Endpoints
-#
-#
+# -- Routers --
 app.include_router(game_router)
-#
-#
-#       Tournaments Endpoints
-#
-#
 app.include_router(tournament_router)
-#
-#
-#       Skill Levels Endpoints
-#
-#
 app.include_router(skill_level_router)
-#
-#
-#       Player Endpoints
-#
-#
 app.include_router(player_router)
-#
-#
-#       Mentorship Endpoints
-#
-#
 app.include_router(mentorship_router)
+app.include_router(violation_router)  # ✅ ADDED
 
 
 #
-#
-#       Global Exception Handler
-#
+# Global Exception Handlers
 #
 @app.exception_handler(NotFoundError)
 async def not_found_handler(request: Request, exc: NotFoundError):
     logger.warning(f"NotFoundError: {exc}")
-    return JSONResponse(
-        status_code=404,
-        content={"detail": str(exc)},
-    )
+    return JSONResponse(status_code=404, content={"detail": str(exc)})
 
 
 @app.exception_handler(ConflictError)
 async def conflict_handler(request: Request, exc: ConflictError):
     logger.warning(f"ConflictError: {exc}")
-    return JSONResponse(
-        status_code=409,
-        content={"detail": str(exc)},
-    )
+    return JSONResponse(status_code=409, content={"detail": str(exc)})
 
 
 @app.exception_handler(ValidationError)
 async def validation_handler(request: Request, exc: ValidationError):
     logger.warning(f"ValidationError: {exc}")
-    return JSONResponse(
-        status_code=400,
-        content={"detail": str(exc)},
-    )
+    return JSONResponse(status_code=400, content={"detail": str(exc)})
 
 
 @app.exception_handler(AppError)
 async def app_error_handler(request: Request, exc: AppError):
-    # fallback for any other custom app errors
     logger.error(f"AppError: {exc}")
-    return JSONResponse(
-        status_code=400,
-        content={"detail": str(exc)},
-    )
+    return JSONResponse(status_code=400, content={"detail": str(exc)})
 
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
-    # FastAPI / Starlette built-in HTTP errors
     logger.error(f"HTTPException {exc.status_code}: {exc.detail}")
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"detail": exc.detail},
-    )
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    # Last-resort catch-all
     logger.exception(f"Unhandled Exception: {exc}")
-    return JSONResponse(
-        status_code=500,
-        content={"detail": "Internal server error"},
-    )
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 
-# Game_player End points
+# Game_player Endpoints
 game_player_service = GamePlayerService()
 
 
