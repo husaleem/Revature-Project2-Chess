@@ -21,6 +21,7 @@ from src.api.mentorship_endpoints import router as mentorship_router
 from src.api.tournament_endpoints import router as tournament_router
 from src.api.skill_level_endpoints import router as skill_level_router
 from src.api.violation_endpoints import router as violation_router
+from src.api.relations_endpoints import router as relations_router
 
 # Game_player Dependencies
 from src.services.game_player_service import GamePlayerService
@@ -40,6 +41,7 @@ app.include_router(skill_level_router)
 app.include_router(player_router)
 app.include_router(mentorship_router)
 app.include_router(violation_router)
+app.include_router(relations_router)
 
 
 #
