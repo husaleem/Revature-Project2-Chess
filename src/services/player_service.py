@@ -1,6 +1,7 @@
 from src.repositories.player_repository_protocol import PlayerRepositoryProtocol
 from src.domain.player import Player
 from src.domain.game import Game, WinState
+from src.domain.violation import Violation
 
 
 class PlayerService:
@@ -127,6 +128,14 @@ class PlayerService:
                 self.repo.update_rating_via_increment_by_id(
                     game.player_black_id, draw_change
                 )
+
+    def update_players_on_violation_insert(self, violation: Violation):
+        if not (isinstance(violation, Violation)):
+            raise ValueError(f"Expected type (Game), but received {type(Game)}")
+        violation_change = -100
+        self.repo.update_rating_via_increment_by_id(
+            violation.player_id, violation_change
+        )
 
     def delete_by_id(self, player_id: str) -> Player:
         if not (isinstance(player_id, str)):
