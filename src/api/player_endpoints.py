@@ -30,7 +30,7 @@ def create_player(
 
 
 # -- Player Get Endpoints (Read) --
-@router.get("/all", response_model=list[PlayerRead])
+@router.get("/search/all", response_model=list[PlayerRead])
 def get_all_players(svc: PlayerService = Depends(get_player_service)):
     return svc.get_all()
 
@@ -76,25 +76,26 @@ def get_by_rating_range_players(
 
 @router.get("/search/by-id", response_model=PlayerRead)
 def get_by_id_players(player_id: str, svc: PlayerService = Depends(get_player_service)):
+    print(f"{player_id} is the id being searched")
     return svc.get_by_id(player_id)
 
 
 # -- Player Patch Endpoints (Update) --
-@router.patch("/update/first-name", response_model=PlayerRead)
+@router.patch("/update/first-name-by-id", response_model=PlayerRead)
 def update_first_name_by_id_players(
     player_id: str, first_name: str, svc: PlayerService = Depends(get_player_service)
 ):
     return svc.update_first_name_by_id(player_id, first_name)
 
 
-@router.patch("/update/last-name", response_model=PlayerRead)
+@router.patch("/update/last-name-by-id", response_model=PlayerRead)
 def update_last_name_by_id_players(
     player_id: str, last_name: str, svc: PlayerService = Depends(get_player_service)
 ):
     return svc.update_last_name_by_id(player_id, last_name)
 
 
-@router.patch("/update/full-name", response_model=PlayerRead)
+@router.patch("/update/full-name-by-id", response_model=PlayerRead)
 def update_full_name_by_id_players(
     player_id: str,
     first_name: str,
@@ -104,7 +105,7 @@ def update_full_name_by_id_players(
     return svc.update_full_name_by_id(player_id, first_name, last_name)
 
 
-@router.patch("/update/rating", response_model=PlayerRead)
+@router.patch("/update/rating-by-id", response_model=PlayerRead)
 def update_rating_by_id_players(
     player_id: str, rating: int, svc: PlayerService = Depends(get_player_service)
 ):
@@ -112,7 +113,7 @@ def update_rating_by_id_players(
 
 
 # -- Player Delete Endpoints (Delete) --
-@router.delete("/remove", response_model=PlayerRead)
+@router.delete("/delete/by-id", response_model=PlayerRead)
 def delete_by_id_players(
     player_id: str, svc: PlayerService = Depends(get_player_service)
 ):

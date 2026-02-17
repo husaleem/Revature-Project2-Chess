@@ -36,29 +36,29 @@ INSERT INTO tournaments (tournament_id, name, start_date, end_date, location) VA
     (gen_random_uuid(), 'Hartford Classic', DATE '2026-07-22', DATE '2026-07-24', 'Hartford, CT');
 
 -- Player roster with ratings that fit USCF bands
-INSERT INTO players (first_name, last_name, rating) VALUES
-    ('Yurii',   'Koval',        2460),
-    ('Joseph',  'Wallace',      2235),
-    ('Hussnain','Saleem',       2380),
-    ('Ronald',  'Forte',        1930),
-    ('Wedad',   'Mourtada',     1885),
-    ('Eva',     'Patel',        1625),
-    ('Seth',    'Loyd',         2055),
-    ('Amit',    'Deshpande',    1770),
-    ('Navdeep', 'Natt',         1685),
-    ('Brian',   'Tokumoto',     1820),
-    ('Denis',   'Dudkin',       2320),
-    ('Ethan',   'Wilson',       1345),
-    ('Juan',    'Martinez',     1510),
-    ('Keene',   'Lu',            960),
-    ('Kevin',   'Wonder',       1185),
-    ('Leon',    'Zeltser',      1440),
-    ('Liam',    'O Neil',       1595),
-    ('Michael', 'Chen',         1715),
-    ('Nurul',   'Hussain',      1080),
-    ('Tega',    'Omarejedje',    920),
-    ('Ryan',    'Zimmerman',     705),
-    ('Kelvin',  'Green',         540);
+INSERT INTO players (player_id, first_name, last_name, rating) VALUES
+    (gen_random_uuid(), 'Yurii',   'Koval',        2460),
+    (gen_random_uuid(), 'Joseph',  'Wallace',      2235),
+    (gen_random_uuid(), 'Hussnain','Saleem',       2380),
+    (gen_random_uuid(), 'Ronald',  'Forte',        1930),
+    (gen_random_uuid(), 'Wedad',   'Mourtada',     1885),
+    (gen_random_uuid(), 'Eva',     'Patel',        1625),
+    (gen_random_uuid(), 'Seth',    'Loyd',         2055),
+    (gen_random_uuid(), 'Amit',    'Deshpande',    1770),
+    (gen_random_uuid(), 'Navdeep', 'Natt',         1685),
+    (gen_random_uuid(), 'Brian',   'Tokumoto',     1820),
+    (gen_random_uuid(), 'Denis',   'Dudkin',       2320),
+    (gen_random_uuid(), 'Ethan',   'Wilson',       1345),
+    (gen_random_uuid(), 'Juan',    'Martinez',     1510),
+    (gen_random_uuid(), 'Keene',   'Lu',            960),
+    (gen_random_uuid(), 'Kevin',   'Wonder',       1185),
+    (gen_random_uuid(), 'Leon',    'Zeltser',      1440),
+    (gen_random_uuid(), 'Liam',    'O Neil',       1595),
+    (gen_random_uuid(), 'Michael', 'Chen',         1715),
+    (gen_random_uuid(), 'Nurul',   'Hussain',      1080),
+    (gen_random_uuid(), 'Tega',    'Omarejedje',    920),
+    (gen_random_uuid(), 'Ryan',    'Zimmerman',     705),
+    (gen_random_uuid(), 'Kelvin',  'Green',         540);
 
 -- Manual games per tournament
 INSERT INTO games (game_id, tournament_id, player_white_id, player_black_id, result, played_at) VALUES

@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, or_, and_, case
 from sqlalchemy.sql.functions import count
 from src.domain.player import Player
-from src.domain.game import Game
+from src.domain.game import Game, WinState
 from src.domain.skill_level import SkillLevel
 from src.repositories.relations_repository_protocol import RelationsRepositoryProtocol
 
@@ -26,7 +26,7 @@ class RelationsRepository(RelationsRepositoryProtocol):
                             (
                                 and_(
                                     Player.player_id == Game.player_white_id,
-                                    Game.result == "white",
+                                    Game.result == WinState.WHITE_WIN,
                                 ),
                                 1,
                             ),
@@ -34,12 +34,12 @@ class RelationsRepository(RelationsRepositoryProtocol):
                             (
                                 and_(
                                     Player.player_id == Game.player_black_id,
-                                    Game.result == "black",
+                                    Game.result == WinState.BLACK_WIN,
                                 ),
                                 1,
                             ),
                             # Condition 3: Draw
-                            (Game.result == "draw", 0.5),
+                            (Game.result == WinState.DRAW, 0.5),
                             else_=0,
                         )
                     )
