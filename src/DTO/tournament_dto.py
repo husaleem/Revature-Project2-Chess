@@ -39,7 +39,7 @@ class TournamentParticipantRead(BaseModel):
     player_id: UUID
     first_name: str
     last_name: str
-    rating: int | None
+    rating: Optional[int] = None
     wins: int
     losses: int
     draws: int
