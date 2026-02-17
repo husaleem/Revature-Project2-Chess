@@ -8,7 +8,8 @@ TRUNCATE TABLE
     games,
     players,
     tournaments,
-    skill_level
+    skill_level,
+    violations
 RESTART IDENTITY CASCADE;
 
 -- USCF rating categories
@@ -121,5 +122,28 @@ INSERT INTO games (game_id, tournament_id, player_white_id, player_black_id, res
         (SELECT player_id FROM players WHERE first_name = 'Yurii' AND last_name = 'Koval' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Hussnain' AND last_name = 'Saleem' LIMIT 1),
         'DRAW',      TIMESTAMPTZ '2026-07-23 11:00:00-04');
+
+-- Rule violations tied to existing games
+INSERT INTO violations (violation_id, player_id, game_id, violation_type, violation_date, consequence) VALUES
+    (
+        gen_random_uuid(),
+        (SELECT player_id FROM players WHERE first_name = 'Yurii' AND last_name = 'Koval' LIMIT 1),
+        (SELECT game_id FROM games WHERE player_white_id = (SELECT player_id FROM players WHERE first_name = 'Yurii' AND last_name = 'Koval' LIMIT 1)
+                              AND player_black_id = (SELECT player_id FROM players WHERE first_name = 'Joseph' AND last_name = 'Wallace' LIMIT 1)
+                              LIMIT 1),
+        'Illegal Move',
+        TIMESTAMPTZ '2026-04-05 10:45:00-05',
+        'Warning issued'
+    ),
+    (
+        gen_random_uuid(),
+        (SELECT player_id FROM players WHERE first_name = 'Navdeep' AND last_name = 'Natt' LIMIT 1),
+        (SELECT game_id FROM games WHERE player_white_id = (SELECT player_id FROM players WHERE first_name = 'Navdeep' AND last_name = 'Natt' LIMIT 1)
+                              AND player_black_id = (SELECT player_id FROM players WHERE first_name = 'Brian' AND last_name = 'Tokumoto' LIMIT 1)
+                              LIMIT 1),
+        'Time Forfeit',
+        TIMESTAMPTZ '2026-05-10 14:45:00-04',
+        'Game declared loss'
+    );
 
 COMMIT;
