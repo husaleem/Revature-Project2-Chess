@@ -68,3 +68,4 @@ class RelationsRepository(RelationsRepositoryProtocol):
         )
 
         return query.first()
+    

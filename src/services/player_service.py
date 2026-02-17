@@ -82,6 +82,15 @@ class PlayerService:
             )
         return self.repo.update_rating_by_id(player_id, rating)
 
+    def update_rating_via_increment_by_id(
+        self, player_id: str, rating_increment: int
+    ) -> Player:
+        if not (isinstance(player_id, str) or isinstance(rating_increment, int)):
+            raise ValueError(
+                f"Expected type (str, int), but received ({type(player_id)}, {type({rating_increment})})"
+            )
+        return self.repo.update_rating_via_increment_by_id(player_id, rating_increment)
+
     def delete_by_id(self, player_id: str) -> Player:
         if not (isinstance(player_id, str)):
             raise ValueError(f"Expected type (str), but received ({type(player_id)})")

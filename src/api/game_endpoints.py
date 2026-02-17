@@ -8,10 +8,19 @@ from src.DTO.game import GameCreate, GameRead
 from src.repositories.game_repository import GameRepository
 from src.services.game_service import GameService
 
+from src.repositories.player_repository import PlayerRepository
+from src.services.player_service import PlayerService
+
 router = APIRouter(prefix="/games", tags=["Game"])
+
 
 def get_game_repository(db: Session = Depends(get_db)) -> GameRepository:
     return GameRepository(db)
+
+
+def get_player_repository(db: Session = Depends(get_db)) -> PlayerRepository:
+    return PlayerRepository(db)
+
 
 def get_game_service(
     repo: GameRepository = Depends(get_game_repository),
@@ -19,11 +28,31 @@ def get_game_service(
     return GameService(repo)
 
 
+def get_player_service(
+    repo: PlayerRepository = Depends(get_player_repository),
+) -> PlayerService:
+    return PlayerService(repo)
+
+
 # -- Game Post Endpoints (Create)
 @router.post("/add", response_model=str)
-def add_game(payload: GameCreate, svc: GameService = Depends(get_game_service)):
+def add_game(
+    payload: GameCreate,
+    game_svc: GameService = Depends(get_game_service),
+    player_svc: PlayerService = Depends(get_player_service),
+):
     game = Game(**payload.model_dump())
-    return svc.add_game(game)
+    match game.result:
+        case WinState.WHITE_WIN:
+            player_svc.update_rating_via_increment_by_id(game.player_white_id, 10)
+            player_svc.update_rating_via_increment_by_id(game.player_black_id, -9)
+        case WinState.BLACK_WIN:
+            player_svc.update_rating_via_increment_by_id(game.player_white_id, -9)
+            player_svc.update_rating_via_increment_by_id(game.player_black_id, 10)
+        case WinState.DRAW:
+            player_svc.update_rating_via_increment_by_id(game.player_white_id, 1)
+            player_svc.update_rating_via_increment_by_id(game.player_black_id, 1)
+    return game_svc.add_game(game)
 
 
 # -- Game Get Endpoints (Read)
@@ -84,7 +113,9 @@ def delete_game(game_id: str, svc: GameService = Depends(get_game_service)):
 
 # -- Generate brackets
 @router.get("/generate-tournament-bracket/{tournament_id}", response_model=str)
-def generate_match_bracket(tournament_id: str, svc: GameService = Depends(get_game_service)):
+def generate_match_bracket(
+    tournament_id: str, svc: GameService = Depends(get_game_service)
+):
     try:
         return svc.generate_match_bracket(tournament_id)
     except ValueError as exc:
