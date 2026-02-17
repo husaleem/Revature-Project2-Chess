@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from src.domain.game import Game, WinState
@@ -77,7 +77,15 @@ def update_game_tournament(
 
 
 # -- Game Delete Endpoints (Delete) --
-@router.delete("/game/delete", response_model=str)
+@router.delete("/delete", response_model=str)
 def delete_game(game_id: str, svc: GameService = Depends(get_game_service)):
     return svc.delete_game_by_id(game_id)
 
+
+# -- Generate brackets
+@router.get("/generate-tournament-bracket/{tournament_id}", response_model=str)
+def generate_match_bracket(tournament_id: str, svc: GameService = Depends(get_game_service)):
+    try:
+        return svc.generate_match_bracket(tournament_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
