@@ -25,10 +25,8 @@ class ViolationService:
     def get_by_game_id(self, game_id: UUID):
         return self.repo.get_by_game_id(game_id)
 
-    def create(self, payload):
+    def create(self, violation):
         # pydantic v2
-        data = payload.model_dump() if hasattr(payload, "model_dump") else payload.dict()
-        violation = Violation(**data)
         return self.repo.add(violation)
 
     def update(self, violation_id: UUID, payload):
