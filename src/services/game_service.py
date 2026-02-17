@@ -101,3 +101,52 @@ class GameService:
         if not isinstance(tournament_id, str):
             raise ValueError(f"Expected type (str), but received ({type(tournament_id)})")
         return self.repo.generate_match_bracket(tournament_id)
+
+    #head to head stats between two players(Business Model)
+    def get_head_to_head_stats(self, player1_id: str, player2_id: str) -> dict:
+        if not isinstance(player1_id, str):
+            raise ValueError(f"Expected type (str) for player1_id, but received ({type(player1_id)})")
+        if not isinstance(player2_id, str):
+            raise ValueError(f"Expected type (str) for player2_id, but received ({type(player2_id)})")
+
+        stats = self.repo.get_head_to_head_stats(player1_id, player2_id)
+
+        if not stats:
+            return {"wins": 0, "losses": 0, "draws": 0}
+
+        return {
+            "wins": stats.wins or 0,
+            "losses": stats.losses or 0,
+            "draws": stats.draws or 0
+        }
+
+    #Record a game result(Business Model)
+    def record_game_result(
+        self,
+        tournament_id: str,
+        white_player_id: str,
+        black_player_id: str,
+        result: WinState
+    ) -> Game:
+
+        if not isinstance(tournament_id, str):
+            raise ValueError("tournament_id must be str")
+        if not isinstance(white_player_id, str):
+            raise ValueError("white_player_id must be str")
+        if not isinstance(black_player_id, str):
+            raise ValueError("black_player_id must be str")
+        if not isinstance(result, WinState):
+            raise ValueError("result must be WinState")
+
+        game = Game(
+            tournament_id=tournament_id,
+            player_white_id=white_player_id,
+            player_black_id=black_player_id,
+            result=result,
+            played_at=datetime.utcnow()
+        )
+
+        self.repo.add_game(game)
+
+        return game
+

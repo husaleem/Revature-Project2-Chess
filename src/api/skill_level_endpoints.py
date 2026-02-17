@@ -54,3 +54,11 @@ def delete_skill_level(
 ):
     svc.delete_skill_level(title)
     return
+
+#endpoint 6 - GET skill level by player id
+@router.get("/lookup", response_model=dict)
+def lookup_skill_level(
+    player_id: str,
+    service: SkillLevelService = Depends(get_skill_level_service)
+):
+    return service.lookup_skill_level(player_id)
