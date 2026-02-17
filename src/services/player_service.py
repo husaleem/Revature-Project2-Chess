@@ -12,6 +12,13 @@ class PlayerService:
             raise ValueError(f"Expected type (Player), but received ({type(player)})")
         return self.repo.add(player)
 
+    def replace(self, player_id: str, player: Player) -> str:
+        if not (isinstance(player_id, str) or isinstance(player, Player)):
+            raise ValueError(
+                f"Expected type (str, Player), but received ({type(player_id)}, {type(player)})"
+            )
+        return self.repo.replace(player_id, player)
+
     def get_all(self) -> list[Player]:
         return self.repo.get_all()
 

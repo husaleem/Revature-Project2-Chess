@@ -13,6 +13,14 @@ class PlayerRepository(PlayerRepositoryProtocol):
         self.session.commit()
         return str(player.player_id)
 
+    # -- Replace Operations --
+    def replace(self, player_id: str, player: Player) -> str:
+        current_player = self.session.get(Player, player_id)
+        self.session.delete(current_player)
+        self.session.add(player)
+        self.session.commit()
+        return str(player.player_id)
+
     # -- Read Operations --
     def get_all(self) -> list[Player]:
         return self.session.query(Player).all()
@@ -41,11 +49,10 @@ class PlayerRepository(PlayerRepositoryProtocol):
         )
 
     def get_by_id(self, player_id: str) -> Player:
-        return (
-            self.session.query(Player)
-            .filter(Player.player_id == player_id)
-            .one_or_none()
-        )
+        player = self.session.get(Player, player_id)
+        if not player:
+            raise Exception("Player not found")
+        return player
 
     # -- Update Operations --
     def update_first_name_by_id(self, player_id: str, first_name: str) -> Player:
@@ -86,8 +93,10 @@ class PlayerRepository(PlayerRepositoryProtocol):
         self.session.commit()
         self.session.refresh(player)
         return player
-    
-    def update_rating_via_increment_by_id(self, player_id: str, rating_increment: int) -> Player:
+
+    def update_rating_via_increment_by_id(
+        self, player_id: str, rating_increment: int
+    ) -> Player:
         player = self.session.get(Player, player_id)
         if not player:
             raise Exception("Player not found")
@@ -95,7 +104,7 @@ class PlayerRepository(PlayerRepositoryProtocol):
         self.session.commit()
         self.session.refresh(player)
         return player
-        
+
     # -- Delete Operations --
     def delete_by_id(self, player_id: str) -> Player:
         player = self.session.get(Player, player_id)
