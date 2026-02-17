@@ -29,6 +29,17 @@ def create_player(
     return svc.add(player)
 
 
+# -- Player Put Endpoints (Replace) --
+@router.put("/replace/by-id", response_model=str)
+def replace_player(
+    payload: PlayerCreate,
+    player_id: str,
+    svc: PlayerService = Depends(get_player_service),
+):
+    player = Player(**payload.model_dump())
+    return svc.replace(player_id, player)
+
+
 # -- Player Get Endpoints (Read) --
 @router.get("/search/all", response_model=list[PlayerRead])
 def get_all_players(svc: PlayerService = Depends(get_player_service)):

@@ -12,7 +12,10 @@ TRUNCATE TABLE
     violations
 RESTART IDENTITY CASCADE;
 
--- USCF rating categories
+-- =========================
+-- Skill Levels (PK = title)
+-- =========================
+-- Must match schema: title is PRIMARY KEY (no skill_level_id column)
 INSERT INTO skill_level (title, rating_lower_bound, rating_upper_bound) VALUES
     ('Senior Master', 2400, 9999),
     ('National Master', 2200, 2399),
@@ -28,7 +31,9 @@ INSERT INTO skill_level (title, rating_lower_bound, rating_upper_bound) VALUES
     ('Class I', 200, 399),
     ('Class J', 100, 199);
 
--- Tournaments (UUIDs generated at insert time)
+-- =========================
+-- Tournaments
+-- =========================
 INSERT INTO tournaments (tournament_id, name, start_date, end_date, location) VALUES
     (gen_random_uuid(), 'Chicago Spring Open', DATE '2026-04-05', DATE '2026-04-07', 'Chicago, IL'),
     (gen_random_uuid(), 'NYC Rapid Challenge', DATE '2026-05-10', DATE '2026-05-12', 'New York, NY'),
@@ -67,56 +72,67 @@ INSERT INTO games (game_id, tournament_id, player_white_id, player_black_id, res
         (SELECT player_id FROM players WHERE first_name = 'Yurii' AND last_name = 'Koval' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Joseph' AND last_name = 'Wallace' LIMIT 1),
         'WHITE_WIN', TIMESTAMPTZ '2026-04-05 10:00:00-05'),
+
     (gen_random_uuid(),
         (SELECT tournament_id FROM tournaments WHERE name = 'Chicago Spring Open' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Hussnain' AND last_name = 'Saleem' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Ronald' AND last_name = 'Forte' LIMIT 1),
         'BLACK_WIN', TIMESTAMPTZ '2026-04-05 15:00:00-05'),
+
     (gen_random_uuid(),
         (SELECT tournament_id FROM tournaments WHERE name = 'Chicago Spring Open' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Wedad' AND last_name = 'Mourtada' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Eva' AND last_name = 'Patel' LIMIT 1),
         'DRAW',      TIMESTAMPTZ '2026-04-06 10:00:00-05'),
+
     (gen_random_uuid(),
         (SELECT tournament_id FROM tournaments WHERE name = 'NYC Rapid Challenge' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Seth' AND last_name = 'Loyd' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Amit' AND last_name = 'Deshpande' LIMIT 1),
         'WHITE_WIN', TIMESTAMPTZ '2026-05-10 09:30:00-04'),
+
     (gen_random_uuid(),
         (SELECT tournament_id FROM tournaments WHERE name = 'NYC Rapid Challenge' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Navdeep' AND last_name = 'Natt' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Brian' AND last_name = 'Tokumoto' LIMIT 1),
         'BLACK_WIN', TIMESTAMPTZ '2026-05-10 14:30:00-04'),
+
     (gen_random_uuid(),
         (SELECT tournament_id FROM tournaments WHERE name = 'NYC Rapid Challenge' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Denis' AND last_name = 'Dudkin' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Ethan' AND last_name = 'Wilson' LIMIT 1),
         'DRAW',      TIMESTAMPTZ '2026-05-11 11:00:00-04'),
+
     (gen_random_uuid(),
         (SELECT tournament_id FROM tournaments WHERE name = 'St. Louis Masters' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Juan' AND last_name = 'Martinez' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Keene' AND last_name = 'Lu' LIMIT 1),
         'WHITE_WIN', TIMESTAMPTZ '2026-06-15 10:00:00-05'),
+
     (gen_random_uuid(),
         (SELECT tournament_id FROM tournaments WHERE name = 'St. Louis Masters' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Kevin' AND last_name = 'Wonder' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Leon' AND last_name = 'Zeltser' LIMIT 1),
         'BLACK_WIN', TIMESTAMPTZ '2026-06-16 10:00:00-05'),
+
     (gen_random_uuid(),
         (SELECT tournament_id FROM tournaments WHERE name = 'St. Louis Masters' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Liam' AND last_name = 'O Neil' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Michael' AND last_name = 'Chen' LIMIT 1),
         'DRAW',      TIMESTAMPTZ '2026-06-17 13:00:00-05'),
+
     (gen_random_uuid(),
         (SELECT tournament_id FROM tournaments WHERE name = 'Hartford Classic' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Nurul' AND last_name = 'Hussain' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Tega' AND last_name = 'Omarejedje' LIMIT 1),
         'WHITE_WIN', TIMESTAMPTZ '2026-07-22 09:00:00-04'),
+
     (gen_random_uuid(),
         (SELECT tournament_id FROM tournaments WHERE name = 'Hartford Classic' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Ryan' AND last_name = 'Zimmerman' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Kelvin' AND last_name = 'Green' LIMIT 1),
         'BLACK_WIN', TIMESTAMPTZ '2026-07-22 14:00:00-04'),
+
     (gen_random_uuid(),
         (SELECT tournament_id FROM tournaments WHERE name = 'Hartford Classic' LIMIT 1),
         (SELECT player_id FROM players WHERE first_name = 'Yurii' AND last_name = 'Koval' LIMIT 1),

@@ -26,16 +26,12 @@ from src.api.violation_endpoints import router as violation_router
 from src.services.game_player_service import GamePlayerService
 from src.DTO.game_player import GamePlayerCreate, GamePlayerResponse
 
-# Relations Dependiencies
-from src.api.relations_endpoints import router as relations_router
-
 
 app = FastAPI(title="Chess Tournament API")
 
 setup_logging()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
 
 # -- Routers --
 app.include_router(game_router)
@@ -44,7 +40,6 @@ app.include_router(skill_level_router)
 app.include_router(player_router)
 app.include_router(mentorship_router)
 app.include_router(violation_router)
-app.include_router(relations_router)
 
 
 #
@@ -83,7 +78,9 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     logger.exception(f"Unhandled Exception: {exc}")
-    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
+    return JSONResponse(
+        status_code=500, content={"detail": f"Internal server error: {exc}"}
+    )
 
 
 # Game_player Endpoints
