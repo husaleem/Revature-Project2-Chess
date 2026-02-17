@@ -1,8 +1,9 @@
 from datetime import datetime, date
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, text
 from sqlalchemy.orm import Session
 from src.repositories.game_repository_protocol import GameRepositoryProtocol
 from src.domain.game import Game, WinState
+
 
 class GameRepository(GameRepositoryProtocol):
     def __init__(self, session: Session):
@@ -100,3 +101,23 @@ class GameRepository(GameRepositoryProtocol):
         self.session.delete(game)
         self.session.commit()
         return f"Deleted game_id: {game.game_id}"
+    
+    #function for head to head stats between two players(Business Model)
+    def get_head_to_head_stats(self, player1_id: str, player2_id: str):
+        query = text("""
+        SELECT 
+            SUM(CASE WHEN gp1.result = 'WIN' THEN 1 ELSE 0 END) AS wins,
+            SUM(CASE WHEN gp1.result = 'LOSS' THEN 1 ELSE 0 END) AS losses,
+            SUM(CASE WHEN gp1.result = 'DRAW' THEN 1 ELSE 0 END) AS draws
+        FROM game_player gp1
+        JOIN game_player gp2
+            ON gp1.game_id = gp2.game_id
+        WHERE gp1.player_id = :p1
+          AND gp2.player_id = :p2
+        """)
+
+        return self.session.execute(
+            query,
+            {"p1": player1_id, "p2": player2_id}
+        ).fetchone()
+
