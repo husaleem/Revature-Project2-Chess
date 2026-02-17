@@ -1,6 +1,9 @@
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy import func, or_, and_, case
 from sqlalchemy.sql.functions import count
+
+from src.DTO.player_match_history import PlayerMatchHistoryRead
+from src.DTO.game import GameRead
 from src.domain.player import Player
 from src.domain.game import Game, WinState
 from src.domain.skill_level import SkillLevel
@@ -115,3 +118,28 @@ class RelationsRepository(RelationsRepositoryProtocol):
             players.append(player)
 
         return players
+
+    #SELECT * FROM games JOIN players ON player_id = player_id
+    def get_player_match_history(self, player_id: str):
+        rows = (
+            self.session.query(
+            Player.player_id, Player.first_name, Player.last_name, Game
+        ).join(Game,
+               or_(
+                   Player.player_id == Game.player_white_id,
+                   Player.player_id == Game.player_black_id,
+               ),
+               ).filter(Player.player_id == player_id).all()
+                )
+        if not rows:
+            return None
+
+        player_id, first_name, last_name = rows[0][:3]
+        history = [GameRead.model_validate(row[3]) for row in rows]
+
+        return PlayerMatchHistoryRead(
+            player_id=player_id,
+            first_name=first_name,
+            last_name=last_name,
+            match_history=history,
+        )

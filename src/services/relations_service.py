@@ -13,3 +13,8 @@ class RelationsService:
 
     def get_top_players(self):
         return self.repo.get_top_players()
+
+    def get_player_match_history(self, player_id: str):
+        if not isinstance(player_id, str):
+            raise ValueError(f"Expected type (str), but received ({type(player_id)})")
+        return self.repo.get_player_match_history(player_id)
