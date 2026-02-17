@@ -86,7 +86,16 @@ class PlayerRepository(PlayerRepositoryProtocol):
         self.session.commit()
         self.session.refresh(player)
         return player
-
+    
+    def update_rating_via_increment_by_id(self, player_id: str, rating_increment: int) -> Player:
+        player = self.session.get(Player, player_id)
+        if not player:
+            raise Exception("Player not found")
+        player.set_rating_by_increment(rating_increment)
+        self.session.commit()
+        self.session.refresh(player)
+        return player
+        
     # -- Delete Operations --
     def delete_by_id(self, player_id: str) -> Player:
         player = self.session.get(Player, player_id)
