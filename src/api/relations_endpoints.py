@@ -19,7 +19,7 @@ def get_relations_service(
     return RelationsService(repo)
 
 
-@router.get("/player_summary", response_model=PlayerSummary)
+@router.get("/player-summary-by-id", response_model=PlayerSummary)
 def get_player_summary_by_id(
     player_id: str, svc: RelationsService = Depends(get_relations_service)
 ):
