@@ -7,6 +7,10 @@ from src.db.dependencies import get_db
 from src.DTO.violation import ViolationCreate, ViolationRead, ViolationUpdate
 from src.repositories.violation_repository import ViolationRepository
 from src.services.violation_service import ViolationService
+from src.domain.violation import Violation
+
+from src.repositories.player_repository import PlayerRepository
+from src.services.player_service import PlayerService
 
 router = APIRouter(prefix="/violations", tags=["Violations"])
 
@@ -14,6 +18,16 @@ router = APIRouter(prefix="/violations", tags=["Violations"])
 def get_violation_service(db: Session = Depends(get_db)) -> ViolationService:
     repo = ViolationRepository(db)
     return ViolationService(repo)
+
+
+def get_player_repository(db: Session = Depends(get_db)) -> PlayerRepository:
+    return PlayerRepository(db)
+
+
+def get_player_service(
+    repo: PlayerRepository = Depends(get_player_repository),
+) -> PlayerService:
+    return PlayerService(repo)
 
 
 @router.get("/all", response_model=List[ViolationRead])
@@ -24,9 +38,12 @@ def get_all_violations(service: ViolationService = Depends(get_violation_service
 @router.post("/add", response_model=ViolationRead, status_code=status.HTTP_201_CREATED)
 def create_violation(
     payload: ViolationCreate,
-    service: ViolationService = Depends(get_violation_service),
+    violation_service: ViolationService = Depends(get_violation_service),
+    player_service: PlayerService = Depends(get_player_service),
 ):
-    return service.create(payload)
+    violation = Violation(**payload.model_dump())
+    player_service.update_players_on_violation_insert(violation)
+    return violation_service.create(violation)
 
 
 @router.get("/by-id", response_model=ViolationRead)
