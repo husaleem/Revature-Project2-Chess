@@ -6,6 +6,9 @@ class PlayerRepositoryProtocol(Protocol):
     # -- Create Operations --
     def add(self, player: Player) -> str: ...
 
+    # -- Replace Operations --
+    def replace(self, player_id: str, player: Player) -> str: ...
+
     # -- Read Operations --
     def get_all(self) -> list[Player]: ...
 
