@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from sqlalchemy.exc import IntegrityError
 from src.domain.skill_level import SkillLevel
 from src.repositories.skill_level_repository_protocol import SkillLevelRepositoryProtocol
@@ -43,4 +44,20 @@ class SkillLevelRepository(SkillLevelRepositoryProtocol):
             raise Exception("Could not delete skill level due to a database constraint.")
 
         
-    #more methods might be added...
+    #Lookup skill level by player id (Business Model)
+    def lookup_skill_level_by_player_id(self, player_id: str):
+        query = text("""
+        SELECT 
+            p.player_id,
+            p.first_name,
+            s.title AS skill_level
+        FROM player p
+        INNER JOIN skill_level s
+            ON p.rating BETWEEN s.rating_lower AND s.rating_upper
+        WHERE p.player_id = :player_id
+        """)
+
+        return self.session.execute(
+            query,
+            {"player_id": player_id}
+        ).fetchone()
