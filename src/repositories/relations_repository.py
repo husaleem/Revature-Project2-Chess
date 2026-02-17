@@ -109,9 +109,9 @@ class RelationsRepository(RelationsRepositoryProtocol):
         players: list[Player] = []
         for player, win_count, loss_count, draw_count, avg_rating in result:
             total_played = win_count + loss_count + draw_count
-            player.winLoss = (win_count / loss_count) if loss_count else None
+            player.winLoss = (win_count / loss_count) if loss_count else win_count
             player.drawPercent = (draw_count / total_played) if total_played else 0.0
-            player.avgOpponentRating = float(avg_rating) if avg_rating is not None else None
+            player.avgOppRating = float(avg_rating) if avg_rating is not None else None
             players.append(player)
 
         return players
