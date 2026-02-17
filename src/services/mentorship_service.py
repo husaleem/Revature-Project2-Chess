@@ -24,7 +24,7 @@ class MentorshipService:
     def get_by_mentor_id(self, mentor_id: str) -> list[Mentorship]:
         if not isinstance(mentor_id, str):
             raise ValueError(f"Expected type (str), but received ({type(mentor_id)})")
-        return self.repo.get_by_player_id(mentor_id)
+        return self.repo.get_by_mentor_id(mentor_id)
 
     def get_by_player_and_mentor_id(self, player_id: str, mentor_id: str) -> Mentorship:
         if not (isinstance(player_id, str) or isinstance(mentor_id, str)):

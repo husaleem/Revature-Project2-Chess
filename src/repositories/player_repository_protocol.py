@@ -34,5 +34,9 @@ class PlayerRepositoryProtocol(Protocol):
 
     def update_rating_by_id(self, player_id: str, rating: int) -> Player: ...
 
+    def update_rating_via_increment_by_id(
+        self, player_id: str, rating_increment: int
+    ) -> Player: ...
+
     # -- Delete Operations --
     def delete_by_id(self, player_id: str) -> Player: ...

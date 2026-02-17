@@ -96,3 +96,8 @@ class GameService:
         if not isinstance(game_id, str):
             raise ValueError(f"Expected type (str), but received ({type(game_id)})")
         return self.repo.delete_game_by_id(game_id)
+
+    def generate_match_bracket(self, tournament_id: str):
+        if not isinstance(tournament_id, str):
+            raise ValueError(f"Expected type (str), but received ({type(tournament_id)})")
+        return self.repo.generate_match_bracket(tournament_id)

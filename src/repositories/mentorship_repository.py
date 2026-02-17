@@ -40,7 +40,7 @@ class MentorshipRepository(MentorshipRepositoryProtocol):
             raise Exception("Mentorship not found")
         mentorship.set_mentorship(new_player_id, new_mentor_id)
         self.session.commit()
-        self.session.refresh()
+        self.session.refresh(mentorship)
         return mentorship
 
     # -- Delete Operations --
@@ -52,5 +52,4 @@ class MentorshipRepository(MentorshipRepositoryProtocol):
             raise Exception("Mentorship not found")
         self.session.delete(mentorship)
         self.session.commit()
-        self.session.refresh()
         return mentorship

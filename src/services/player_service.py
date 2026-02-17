@@ -1,5 +1,6 @@
 from src.repositories.player_repository_protocol import PlayerRepositoryProtocol
 from src.domain.player import Player
+from src.domain.game import Game, WinState
 
 
 class PlayerService:
@@ -81,6 +82,44 @@ class PlayerService:
                 f"Expected type (str, int), but received ({type(player_id)}, {type(rating)})"
             )
         return self.repo.update_rating_by_id(player_id, rating)
+
+    def update_rating_via_increment_by_id(
+        self, player_id: str, rating_increment: int
+    ) -> Player:
+        if not (isinstance(player_id, str) or isinstance(rating_increment, int)):
+            raise ValueError(
+                f"Expected type (str, int), but received ({type(player_id)}, {type({rating_increment})})"
+            )
+        return self.repo.update_rating_via_increment_by_id(player_id, rating_increment)
+
+    def update_players_on_game_insert(self, game: Game):
+        if not (isinstance(game, Game)):
+            raise ValueError(f"Expected type (Game), but received {type(Game)})")
+        loss_change = -9
+        win_change = 10
+        draw_change = 1
+        match game.result:
+            case WinState.WHITE_WIN:
+                self.repo.update_rating_via_increment_by_id(
+                    game.player_white_id, win_change
+                )
+                self.repo.update_rating_via_increment_by_id(
+                    game.player_black_id, loss_change
+                )
+            case WinState.BLACK_WIN:
+                self.repo.update_rating_via_increment_by_id(
+                    game.player_white_id, loss_change
+                )
+                self.repo.update_rating_via_increment_by_id(
+                    game.player_black_id, win_change
+                )
+            case WinState.DRAW:
+                self.repo.update_rating_via_increment_by_id(
+                    game.player_white_id, draw_change
+                )
+                self.repo.update_rating_via_increment_by_id(
+                    game.player_black_id, draw_change
+                )
 
     def delete_by_id(self, player_id: str) -> Player:
         if not (isinstance(player_id, str)):

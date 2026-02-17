@@ -1,9 +1,14 @@
 from uuid import UUID
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from src.db.dependencies import get_db
-from src.DTO.tournament_dto import TournamentCreate, TournamentRead, TournamentUpdate
+from src.DTO.tournament_dto import (
+    TournamentCreate,
+    TournamentRead,
+    TournamentUpdate,
+    TournamentParticipantRead,
+)
 from src.repositories.tournament_repository import TournamentRepository
 from src.services.tournament_service import TournamentService
 
@@ -56,3 +61,17 @@ def delete_tournament(
 ):
     svc.delete_tournament(tournament_id)
     return
+
+
+#BUSINESS ENDPOINT
+@router.get("/participants/{tournament_id}", response_model=list[TournamentParticipantRead])
+def get_participants(
+        tournament_id: str,
+        svc: TournamentService = Depends(get_tournament_service)
+):
+     try:
+         return svc.get_participants_by_tournament_id(tournament_id)
+     except ValueError as exc:
+         message = str(exc)
+         status_code = 400 if message.startswith("Invalid") else 404
+         raise HTTPException(status_code=status_code, detail=message)
