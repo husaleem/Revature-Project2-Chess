@@ -96,7 +96,12 @@ class GameService:
         if not isinstance(game_id, str):
             raise ValueError(f"Expected type (str), but received ({type(game_id)})")
         return self.repo.delete_game_by_id(game_id)
-    
+
+    def generate_match_bracket(self, tournament_id: str):
+        if not isinstance(tournament_id, str):
+            raise ValueError(f"Expected type (str), but received ({type(tournament_id)})")
+        return self.repo.generate_match_bracket(tournament_id)
+
     #head to head stats between two players(Business Model)
     def get_head_to_head_stats(self, player1_id: str, player2_id: str) -> dict:
         if not isinstance(player1_id, str):
@@ -114,7 +119,7 @@ class GameService:
             "losses": stats.losses or 0,
             "draws": stats.draws or 0
         }
-        
+
     #Record a game result(Business Model)
     def record_game_result(
         self,

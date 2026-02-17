@@ -1,8 +1,11 @@
+import math
 from datetime import datetime, date
 from sqlalchemy import func, or_, text
 from sqlalchemy.orm import Session
+
 from src.repositories.game_repository_protocol import GameRepositoryProtocol
 from src.domain.game import Game, WinState
+from src.domain.player import Player
 
 
 class GameRepository(GameRepositoryProtocol):
@@ -101,7 +104,7 @@ class GameRepository(GameRepositoryProtocol):
         self.session.delete(game)
         self.session.commit()
         return f"Deleted game_id: {game.game_id}"
-    
+
     #function for head to head stats between two players(Business Model)
     def get_head_to_head_stats(self, player1_id: str, player2_id: str):
         query = text("""
@@ -120,4 +123,28 @@ class GameRepository(GameRepositoryProtocol):
             query,
             {"p1": player1_id, "p2": player2_id}
         ).fetchone()
+
+    def generate_match_bracket(self, tournament_id: str):
+        # check if there are at least 2^n players and just create an empty games based on the amount
+        players = self.session.query(Player).all()
+        player_count = len(players)
+        if player_count < 2:
+            raise ValueError("At least two players are required before generating a bracket.")
+
+        max_power = 2 ** math.floor(math.log2(player_count))
+        if max_power == player_count:
+            bracket_size = max(2, max_power // 2)
+        else:
+            bracket_size = max_power
+        selected_players = players[:bracket_size]
+
+        games_created = 0
+        for i in range(0, len(selected_players), 2):
+            white = selected_players[i]
+            black = selected_players[i + 1]
+            game = Game(tournament_id=tournament_id, player_white_id=white.player_id, player_black_id=black.player_id)
+            self.session.add(game)
+            games_created += 1
+        self.session.commit()
+        return f"Generated {games_created} games for tournament {tournament_id}"
 
