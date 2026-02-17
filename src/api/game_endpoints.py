@@ -42,16 +42,7 @@ def add_game(
     player_svc: PlayerService = Depends(get_player_service),
 ):
     game = Game(**payload.model_dump())
-    match game.result:
-        case WinState.WHITE_WIN:
-            player_svc.update_rating_via_increment_by_id(game.player_white_id, 10)
-            player_svc.update_rating_via_increment_by_id(game.player_black_id, -9)
-        case WinState.BLACK_WIN:
-            player_svc.update_rating_via_increment_by_id(game.player_white_id, -9)
-            player_svc.update_rating_via_increment_by_id(game.player_black_id, 10)
-        case WinState.DRAW:
-            player_svc.update_rating_via_increment_by_id(game.player_white_id, 1)
-            player_svc.update_rating_via_increment_by_id(game.player_black_id, 1)
+    player_svc.update_players_on_game_insert(game)
     return game_svc.add_game(game)
 
 
