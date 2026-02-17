@@ -1,43 +1,11 @@
-from typing import Any
 from uuid import UUID
-from sqlalchemy import func, case, or_, and_, Label
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from src.domain.tournament import Tournament
 from src.domain.player import Player
-from src.domain.game import Game, WinState
+from src.domain.game import Game
+from src.repositories.helpers import player_stats
 from src.repositories.tournament_repository_protocol import TournamentRepositoryProtocol
-
-
-def player_stats() -> tuple[Label[Any], Label[Any], Label[Any]]:
-    is_white = Game.player_white_id == Player.player_id
-    is_black = Game.player_black_id == Player.player_id
-    participated = or_(is_white, is_black)
-
-    white_win = Game.result == WinState.WHITE_WIN
-    black_win = Game.result == WinState.BLACK_WIN
-
-    won_as_white = and_(is_white, white_win)
-    won_as_black = and_(is_black, black_win)
-    lost_as_white = and_(is_white, black_win)
-    lost_as_black = and_(is_black, white_win)
-    draw_as_any = and_(participated, Game.result == WinState.DRAW)
-
-    wins = func.sum(
-        case((won_as_white, 1),
-             (won_as_black, 1),
-             else_=0)
-    ).label("wins")
-
-    losses = func.sum(
-        case((lost_as_white, 1),
-             (lost_as_black, 1),
-             else_=0)
-    ).label("losses")
-
-    draws = func.sum(
-        case((draw_as_any, 1), else_=0)
-    ).label("draws")
-    return wins, losses, draws
 
 
 class TournamentRepository(TournamentRepositoryProtocol):
