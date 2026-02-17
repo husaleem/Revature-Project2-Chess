@@ -1,10 +1,11 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 from sqlalchemy import func, or_, and_, case
 from sqlalchemy.sql.functions import count
 from src.domain.player import Player
-from src.domain.game import Game
+from src.domain.game import Game, WinState
 from src.domain.skill_level import SkillLevel
 from src.repositories.relations_repository_protocol import RelationsRepositoryProtocol
+from src.repositories.helpers import player_stats
 
 
 class RelationsRepository(RelationsRepositoryProtocol):
@@ -26,7 +27,7 @@ class RelationsRepository(RelationsRepositoryProtocol):
                             (
                                 and_(
                                     Player.player_id == Game.player_white_id,
-                                    Game.result == "white",
+                                    Game.result == WinState.WHITE_WIN,
                                 ),
                                 1,
                             ),
@@ -34,12 +35,12 @@ class RelationsRepository(RelationsRepositoryProtocol):
                             (
                                 and_(
                                     Player.player_id == Game.player_black_id,
-                                    Game.result == "black",
+                                    Game.result == WinState.BLACK_WIN,
                                 ),
                                 1,
                             ),
                             # Condition 3: Draw
-                            (Game.result == "draw", 0.5),
+                            (Game.result == WinState.DRAW, 0.5),
                             else_=0,
                         )
                     )
@@ -68,3 +69,49 @@ class RelationsRepository(RelationsRepositoryProtocol):
         )
 
         return query.first()
+
+    # Returns win/loss ratio, draw percentage, average opponent rating, and the most common opponent
+    def get_top_players(self):
+        wins, losses, draws = player_stats()
+
+        opponent = aliased(Player)
+        opponent_condition = or_(
+            and_(
+                Player.player_id == Game.player_white_id,
+                opponent.player_id == Game.player_black_id,
+            ),
+            and_(
+                Player.player_id == Game.player_black_id,
+                opponent.player_id == Game.player_white_id,
+            ),
+        )
+
+        result = (
+            self.session.query(
+                Player,
+                wins,
+                losses,
+                draws,
+                func.avg(opponent.rating).label("avgOppRating"),
+            )
+            .join(
+                Game,
+                or_(
+                    Player.player_id == Game.player_white_id,
+                    Player.player_id == Game.player_black_id,
+                ),
+            )
+            .join(opponent, opponent_condition)
+            .group_by(Player.player_id)
+            .order_by(Player.rating.desc())
+        )
+
+        players: list[Player] = []
+        for player, win_count, loss_count, draw_count, avg_rating in result:
+            total_played = win_count + loss_count + draw_count
+            player.winLoss = (win_count / loss_count) if loss_count else win_count
+            player.drawPercent = (draw_count / total_played) if total_played else 0.0
+            player.avgOppRating = float(avg_rating) if avg_rating is not None else None
+            players.append(player)
+
+        return players

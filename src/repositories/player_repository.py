@@ -13,6 +13,14 @@ class PlayerRepository(PlayerRepositoryProtocol):
         self.session.commit()
         return str(player.player_id)
 
+    # -- Replace Operations --
+    def replace(self, player_id: str, player: Player) -> str:
+        current_player = self.session.get(Player, player_id)
+        self.session.delete(current_player)
+        self.session.add(player)
+        self.session.commit()
+        return str(player.player_id)
+
     # -- Read Operations --
     def get_all(self) -> list[Player]:
         return self.session.query(Player).all()
@@ -36,16 +44,15 @@ class PlayerRepository(PlayerRepositoryProtocol):
     def get_by_rating_range(self, rating_lower: int, rating_upper: int) -> list[Player]:
         return (
             self.session.query(Player)
-            .filter(Player.rating >= rating_lower and Player.rating < rating_upper)
+            .filter(Player.rating >= rating_lower, Player.rating < rating_upper)
             .all()
         )
 
     def get_by_id(self, player_id: str) -> Player:
-        return (
-            self.session.query(Player)
-            .filter(Player.player_id == player_id)
-            .one_or_none()
-        )
+        player = self.session.get(Player, player_id)
+        if not player:
+            raise Exception("Player not found")
+        return player
 
     # -- Update Operations --
     def update_first_name_by_id(self, player_id: str, first_name: str) -> Player:
@@ -54,7 +61,7 @@ class PlayerRepository(PlayerRepositoryProtocol):
             raise Exception("Player not found")
         player.set_first_name(first_name)
         self.session.commit()
-        self.session.refresh()
+        self.session.refresh(player)
         return player
 
     def update_last_name_by_id(self, player_id: str, last_name: str) -> Player:
@@ -63,7 +70,7 @@ class PlayerRepository(PlayerRepositoryProtocol):
             raise Exception("Player not found")
         player.set_last_name(last_name)
         self.session.commit()
-        self.session.refresh()
+        self.session.refresh(player)
         return player
 
     def update_full_name_by_id(
@@ -75,7 +82,7 @@ class PlayerRepository(PlayerRepositoryProtocol):
         player.set_first_name(first_name)
         player.set_last_name(last_name)
         self.session.commit()
-        self.session.refresh()
+        self.session.refresh(player)
         return player
 
     def update_rating_by_id(self, player_id: str, rating: int) -> Player:
@@ -84,7 +91,18 @@ class PlayerRepository(PlayerRepositoryProtocol):
             raise Exception("Player not found")
         player.set_rating(rating)
         self.session.commit()
-        self.session.refresh()
+        self.session.refresh(player)
+        return player
+
+    def update_rating_via_increment_by_id(
+        self, player_id: str, rating_increment: int
+    ) -> Player:
+        player = self.session.get(Player, player_id)
+        if not player:
+            raise Exception("Player not found")
+        player.set_rating_by_increment(rating_increment)
+        self.session.commit()
+        self.session.refresh(player)
         return player
 
     # -- Delete Operations --
@@ -94,5 +112,4 @@ class PlayerRepository(PlayerRepositoryProtocol):
             raise Exception("Player not found")
         self.session.delete(player)
         self.session.commit()
-        self.session.refresh()
         return player

@@ -23,3 +23,6 @@ class Player(Base):
 
     def set_rating(self, new_rating: int):
         self.rating = new_rating
+
+    def set_rating_by_increment(self, rating_increment: int):
+        self.rating += rating_increment
