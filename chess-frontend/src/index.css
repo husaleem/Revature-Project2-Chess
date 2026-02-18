@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --border: rgba(255,255,255,0.08);
+  --card: rgba(255,255,255,0.03);
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+}
+
+/* Full screen app */
+html, body, #root {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  margin: 0;
+  background: #020617; /* deep navy */
+  color: #e5e7eb;
+}
+
+a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+/* Fix input overflow inside flex/grid cards + modals */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+input, select, textarea {
+  box-sizing: border-box;
+  max-width: 100%;
+}

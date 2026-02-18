@@ -40,6 +40,7 @@ INSERT INTO tournaments (tournament_id, name, start_date, end_date, location) VA
     (gen_random_uuid(), 'St. Louis Masters', DATE '2026-06-15', DATE '2026-06-18', 'St. Louis, MO'),
     (gen_random_uuid(), 'Hartford Classic', DATE '2026-07-22', DATE '2026-07-24', 'Hartford, CT');
 
+
 -- Player roster with ratings that fit USCF bands
 INSERT INTO players (player_id, first_name, last_name, rating) VALUES
     (gen_random_uuid(), 'Yurii',   'Koval',        2460),
@@ -162,4 +163,39 @@ INSERT INTO violations (violation_id, player_id, game_id, violation_type, violat
         'Game declared loss'
     );
 
+INSERT INTO mentors (mentor_id, player_id) VALUES
+  (
+    (SELECT player_id FROM players WHERE first_name='Yurii' AND last_name='Koval' LIMIT 1),
+    (SELECT player_id FROM players WHERE first_name='Hussnain' AND last_name='Saleem' LIMIT 1)
+  ),
+  (
+    (SELECT player_id FROM players WHERE first_name='Denis' AND last_name='Dudkin' LIMIT 1),
+    (SELECT player_id FROM players WHERE first_name='Ethan' AND last_name='Wilson' LIMIT 1)
+  ),
+  (
+    (SELECT player_id FROM players WHERE first_name='Joseph' AND last_name='Wallace' LIMIT 1),
+    (SELECT player_id FROM players WHERE first_name='Ronald' AND last_name='Forte' LIMIT 1)
+  );
+
+
+SELECT COUNT(*) AS bad_games
+FROM games
+WHERE result IS NULL OR played_at IS NULL;
+
+SELECT game_id, tournament_id, result, played_at, player_white_id, player_black_id
+FROM games
+WHERE result IS NULL OR played_at IS NULL
+ORDER BY played_at NULLS FIRST
+LIMIT 50;
+
+-- if you have a join table that references games, delete those first
+DELETE FROM game_player
+WHERE game_id IN (
+  SELECT game_id FROM games WHERE result IS NULL OR played_at IS NULL
+);
+
+DELETE FROM games
+WHERE result IS NULL OR played_at IS NULL;
+
 COMMIT;
+
