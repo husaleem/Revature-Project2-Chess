@@ -1,17 +1,57 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTournament } from "../../hooks/use-tournament";
 import { useGamesByTournament } from "../../hooks/use-games-by-tournament";
+import { api } from "../../api/client";
 
 type TabKey = "overview" | "games";
 
+function shortId(id?: string) {
+  if (!id) return "—";
+  return `${id.slice(0, 8)}…`;
+}
+
 export default function TournamentDetail() {
   const { id } = useParams();
-
   const tournament = useTournament(id);
-  const games = useGamesByTournament(id);
+  const gamesHook: any = useGamesByTournament(id);
 
   const [tab, setTab] = useState<TabKey>("overview");
+  const [generating, setGenerating] = useState(false);
+
+  const games = gamesHook?.data ?? [];
+  const gamesLoading = !!gamesHook?.loading;
+  const gamesError = gamesHook?.error ?? null;
+
+  const tournamentId = useMemo(() => {
+    const t = tournament.data as any;
+    return String(t?.tournament_id ?? id ?? "");
+  }, [tournament.data, id]);
+
+  async function generateBracket() {
+    if (!tournamentId) return alert("Missing tournament id.");
+    const ok = window.confirm(
+      "Generate bracket for this tournament?\n\nThis will create scheduled games (result/played_at empty) based on current players."
+    );
+    if (!ok) return;
+
+    try {
+      setGenerating(true);
+      const msg = await api.get<string>(`/games/generate-tournament-bracket/${encodeURIComponent(tournamentId)}`);
+      alert(typeof msg === "string" ? msg : "Bracket generated.");
+
+      // Prefer hook refresh if it exists
+      if (typeof gamesHook?.refresh === "function") {
+        await gamesHook.refresh();
+      } else {
+        window.location.reload();
+      }
+    } catch (e: any) {
+      alert(e?.message ?? "Failed to generate bracket.");
+    } finally {
+      setGenerating(false);
+    }
+  }
 
   if (tournament.loading) return <div style={{ padding: 16 }}>Loading tournament...</div>;
   if (tournament.error) return <div style={{ padding: 16, color: "salmon" }}>Error: {tournament.error}</div>;
@@ -21,10 +61,7 @@ export default function TournamentDetail() {
 
   return (
     <div style={{ padding: 16 }}>
-      <Link
-        to="/tournaments"
-        style={{ textDecoration: "none", color: "rgba(255,255,255,0.75)" }}
-      >
+      <Link to="/tournaments" style={{ textDecoration: "none", color: "rgba(255,255,255,0.75)" }}>
         ← Back to tournaments
       </Link>
 
@@ -40,7 +77,7 @@ export default function TournamentDetail() {
       </div>
 
       {/* Tabs */}
-      <div style={{ marginTop: 22, display: "flex", gap: 10 }}>
+      <div style={{ marginTop: 22, display: "flex", gap: 10, flexWrap: "wrap" }}>
         <TabButton active={tab === "overview"} onClick={() => setTab("overview")}>
           Overview
         </TabButton>
@@ -52,27 +89,48 @@ export default function TournamentDetail() {
         <TabButton active={false} disabled>
           Standings (soon)
         </TabButton>
+
+        {/* Quick action: generate bracket (only if on games tab) */}
+        {tab === "games" && (
+          <button
+            disabled={generating || gamesLoading || (games?.length ?? 0) > 0}
+            onClick={generateBracket}
+            style={{
+              marginLeft: "auto",
+              padding: "10px 12px",
+              borderRadius: 10,
+              border: "1px solid rgba(255,255,255,0.12)",
+              background: (games?.length ?? 0) > 0 ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.10)",
+              color: (games?.length ?? 0) > 0 ? "rgba(255,255,255,0.45)" : "rgba(255,255,255,0.92)",
+              cursor: (games?.length ?? 0) > 0 ? "not-allowed" : "pointer",
+              fontWeight: 900,
+            }}
+            title={(games?.length ?? 0) > 0 ? "Games already exist for this tournament" : "Generate scheduled games"}
+          >
+            {generating ? "Generating..." : "Generate Bracket"}
+          </button>
+        )}
       </div>
 
       <div style={{ marginTop: 14 }}>
         {tab === "games" ? (
           <GamesPanel
-            tournamentId={t.tournament_id ?? id}
-            loading={games.loading}
-            error={games.error}
-            games={games.data}
+            tournamentId={tournamentId}
+            loading={gamesLoading}
+            error={gamesError}
+            games={games}
           />
         ) : (
           <div style={{ opacity: 0.85 }}>
             <div style={{ fontWeight: 700, marginBottom: 8 }}>Overview</div>
             <div style={{ opacity: 0.8 }}>
-              This tab will hold summary stats (players count, rounds, current leader) once the standings endpoint is added.
+              This tab can hold summary stats later (players count, rounds, current leader).
             </div>
           </div>
         )}
       </div>
 
-      {/* Debug: keep for now */}
+      {/* Debug */}
       <pre
         style={{
           marginTop: 18,
@@ -84,7 +142,7 @@ export default function TournamentDetail() {
           fontSize: 12,
         }}
       >
-        {JSON.stringify(tournament.data, null, 2)}
+        {JSON.stringify({ tournament: tournament.data, games }, null, 2)}
       </pre>
     </div>
   );
@@ -105,7 +163,11 @@ function GamesPanel({
   if (error) return <div style={{ color: "salmon" }}>Error loading games: {error}</div>;
 
   if (!games?.length) {
-    return <div>No games found for this tournament.</div>;
+    return (
+      <div style={{ opacity: 0.85 }}>
+        No games found for this tournament yet. Click <b>Generate Bracket</b> to create scheduled games.
+      </div>
+    );
   }
 
   return (
@@ -117,13 +179,7 @@ function GamesPanel({
         overflow: "hidden",
       }}
     >
-      <div
-        style={{
-          padding: 12,
-          fontWeight: 700,
-          borderBottom: "1px solid rgba(255,255,255,0.10)",
-        }}
-      >
+      <div style={{ padding: 12, fontWeight: 700, borderBottom: "1px solid rgba(255,255,255,0.10)" }}>
         Games ({games.length})
       </div>
 
@@ -139,33 +195,22 @@ function GamesPanel({
         </thead>
         <tbody>
           {games.map((g: any) => (
-            <tr
-              key={g.game_id ?? g.id}
-              style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
-            >
+            <tr key={g.game_id ?? g.id} style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
               <td style={{ padding: 12, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>
-                {String(g.game_id ?? g.id)}
+                {shortId(String(g.game_id ?? g.id))}
               </td>
               <td style={{ padding: 12, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>
-                {g.player_white_id ?? "—"}
+                {shortId(String(g.player_white_id ?? ""))}
               </td>
               <td style={{ padding: 12, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>
-                {g.player_black_id ?? "—"}
+                {shortId(String(g.player_black_id ?? ""))}
               </td>
-              <td style={{ padding: 12 }}>{g.result ?? "—"}</td>
+              <td style={{ padding: 12 }}>{g.result ?? "SCHEDULED"}</td>
               <td style={{ padding: 12 }}>{g.played_at ?? "—"}</td>
             </tr>
           ))}
         </tbody>
       </table>
-
-      {/* Debug games payload (optional) */}
-      <details style={{ padding: 12, opacity: 0.9 }}>
-        <summary style={{ cursor: "pointer" }}>Debug games JSON</summary>
-        <pre style={{ marginTop: 10, fontSize: 12, overflow: "auto" }}>
-          {JSON.stringify({ tournamentId, games }, null, 2)}
-        </pre>
-      </details>
     </div>
   );
 }

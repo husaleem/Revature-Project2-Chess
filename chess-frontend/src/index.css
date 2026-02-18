@@ -35,3 +35,13 @@ a {
   color: inherit;
   text-decoration: inherit;
 }
+
+/* Fix input overflow inside flex/grid cards + modals */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+input, select, textarea {
+  box-sizing: border-box;
+  max-width: 100%;
+}

@@ -43,6 +43,7 @@ def add_game(
     player_svc: PlayerService = Depends(get_player_service),
 ):
     game = Game(**payload.model_dump())
+    
     player_svc.update_players_on_game_insert(game)
     return game_svc.add_game(game)
 

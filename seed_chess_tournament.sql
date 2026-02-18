@@ -177,5 +177,25 @@ INSERT INTO mentors (mentor_id, player_id) VALUES
     (SELECT player_id FROM players WHERE first_name='Ronald' AND last_name='Forte' LIMIT 1)
   );
 
+
+SELECT COUNT(*) AS bad_games
+FROM games
+WHERE result IS NULL OR played_at IS NULL;
+
+SELECT game_id, tournament_id, result, played_at, player_white_id, player_black_id
+FROM games
+WHERE result IS NULL OR played_at IS NULL
+ORDER BY played_at NULLS FIRST
+LIMIT 50;
+
+-- if you have a join table that references games, delete those first
+DELETE FROM game_player
+WHERE game_id IN (
+  SELECT game_id FROM games WHERE result IS NULL OR played_at IS NULL
+);
+
+DELETE FROM games
+WHERE result IS NULL OR played_at IS NULL;
+
 COMMIT;
 
