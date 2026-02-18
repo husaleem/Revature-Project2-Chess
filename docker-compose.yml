@@ -13,6 +13,22 @@ services:
       - "8000:8000"
     command: ["uvicorn", "--reload", "--reload-dir", "/Revature-Project2-Chess/src", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
+  frontend:
+    image: node:22-alpine
+    container_name: chess-frontend
+    working_dir: /app
+    volumes:
+      - ./chess-frontend:/app
+    env_file:
+      - .env
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+    depends_on:
+      - app
+    ports:
+      - "5173:5173"
+    command: ["sh", "-c", "npm install && npm run dev -- --host 0.0.0.0 --port 5173"]
+
   db:
     image: postgres:15
     container_name: mydb
