@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import type { SkillLevel } from "../api/skillLevels";
+import type { SkillLevelRead as SkillLevel } from "../api/skillLevels";
 import { skillLevelsApi } from "../api/skillLevels";
 
 function normalize(s: string) {
@@ -176,7 +176,7 @@ export default function SkillLevels() {
                     if (!ok) return;
 
                     try {
-                      await skillLevelsApi.delete(r.title);
+                      await skillLevelsApi.remove(r.title);
                       await load();
                     } catch (err: any) {
                       alert(err?.message ?? "Failed to delete skill level.");
@@ -336,7 +336,7 @@ function SkillLevelModal({
           <Field label="Title">
             <input
               value={form.title}
-              onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
+              onChange={(e) => setForm((p: SkillLevel) => ({ ...p, title: e.target.value }))}
               style={inputStyle}
             />
           </Field>
@@ -345,7 +345,9 @@ function SkillLevelModal({
             <Field label="Rating Lower Bound">
               <input
                 value={String(form.rating_lower_bound)}
-                onChange={(e) => setForm((p) => ({ ...p, rating_lower_bound: Number(e.target.value) }))}
+                onChange={(e) =>
+                  setForm((p: SkillLevel) => ({ ...p, rating_lower_bound: Number(e.target.value) }))
+                }
                 style={inputStyle}
                 inputMode="numeric"
               />
@@ -354,7 +356,9 @@ function SkillLevelModal({
             <Field label="Rating Upper Bound">
               <input
                 value={String(form.rating_upper_bound)}
-                onChange={(e) => setForm((p) => ({ ...p, rating_upper_bound: Number(e.target.value) }))}
+                onChange={(e) =>
+                  setForm((p: SkillLevel) => ({ ...p, rating_upper_bound: Number(e.target.value) }))
+                }
                 style={inputStyle}
                 inputMode="numeric"
               />
