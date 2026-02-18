@@ -87,3 +87,19 @@ class SkillLevelService:
 
         if lower > upper:
             raise Exception("rating_lower_bound must be less than or equal to rating_upper_bound.")
+        
+    
+    def lookup_skill_level(self, player_id: str) -> dict:
+        if not isinstance(player_id, str):
+            raise ValueError("player_id must be a string")
+
+        result = self.repo.lookup_skill_level_by_player_id(player_id)
+
+        if not result:
+            return {"message": "Skill level not found for player"}
+
+        return {
+            "player_id": result.player_id,
+            "player_name": result.first_name,
+            "skill_level": result.skill_level
+        }

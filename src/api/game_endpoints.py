@@ -1,4 +1,5 @@
 from datetime import datetime, date
+from fastapi import APIRouter, Depends, Query
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -101,6 +102,38 @@ def update_game_tournament(
 def delete_game(game_id: str, svc: GameService = Depends(get_game_service)):
     return svc.delete_game_by_id(game_id)
 
+# -- Record Game Endpoints--
+@router.post("/record", response_model=dict)
+def record_game(
+    tournament_id: str,
+    white_player_id: str,
+    black_player_id: str,
+    result: WinState,
+    service: GameService = Depends(get_game_service),
+):
+    game = service.record_game_result(
+        tournament_id=tournament_id,
+        white_player_id=white_player_id,
+        black_player_id=black_player_id,
+        result=result,
+    )
+
+    return {
+        "message": "Game recorded successfully",
+        "game_id": game.game_id,
+        "result": game.result,
+    }
+
+# -- Head-to-Head stats Endpoints--
+@router.get("/head-to-head", response_model=dict)
+def head_to_head_stats(
+    player1_id: int = Query(...),
+    player2_id: int = Query(...),
+    service: GameService = Depends(get_game_service),
+):
+    return service.get_head_to_head_stats(
+        str(player1_id), str(player2_id)
+    )
 
 # -- Generate brackets
 @router.get("/generate-tournament-bracket/{tournament_id}", response_model=str)
