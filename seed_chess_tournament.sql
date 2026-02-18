@@ -163,5 +163,19 @@ INSERT INTO violations (violation_id, player_id, game_id, violation_type, violat
         'Game declared loss'
     );
 
+INSERT INTO mentors (mentor_id, player_id) VALUES
+  (
+    (SELECT player_id FROM players WHERE first_name='Yurii' AND last_name='Koval' LIMIT 1),
+    (SELECT player_id FROM players WHERE first_name='Hussnain' AND last_name='Saleem' LIMIT 1)
+  ),
+  (
+    (SELECT player_id FROM players WHERE first_name='Denis' AND last_name='Dudkin' LIMIT 1),
+    (SELECT player_id FROM players WHERE first_name='Ethan' AND last_name='Wilson' LIMIT 1)
+  ),
+  (
+    (SELECT player_id FROM players WHERE first_name='Joseph' AND last_name='Wallace' LIMIT 1),
+    (SELECT player_id FROM players WHERE first_name='Ronald' AND last_name='Forte' LIMIT 1)
+  );
+
 COMMIT;
 

@@ -54,9 +54,12 @@ export default function LayoutShell() {
         {/* Nav */}
         <nav style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           <NavLink to="/" end style={linkStyle}>Dashboard</NavLink>
+          <NavLink to="/analytics" style={linkStyle}>Analytics</NavLink>
+
           <NavLink to="/tournaments" style={linkStyle}>Tournaments</NavLink>
           <NavLink to="/players" style={linkStyle}>Players</NavLink>
           <NavLink to="/games" style={linkStyle}>Games</NavLink>
+          <NavLink to="/head-to-head" style={linkStyle}>Head-to-Head</NavLink>
           <NavLink to="/standings" style={linkStyle}>Standings</NavLink>
           <NavLink to="/skill-levels" style={linkStyle}>Skill Levels</NavLink>
           <NavLink to="/mentorship" style={linkStyle}>Mentorship</NavLink>

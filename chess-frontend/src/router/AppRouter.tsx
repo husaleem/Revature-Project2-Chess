@@ -10,6 +10,9 @@ import SkillLevels from "../pages/SkillLevels";
 import Mentorship from "../pages/Mentorship";
 import Violations from "../pages/Violations";
 import Standings from "../pages/Standings";
+import Analytics from "../pages/Analytics";
+import PlayerDetail from "../pages/Players/PlayerDetail";
+import HeadToHead from "../pages/HeadToHead";
 
 export const router = createBrowserRouter([
   {
@@ -22,6 +25,7 @@ export const router = createBrowserRouter([
       { path: "tournaments/:id", element: <TournamentDetail /> },
 
       { path: "players", element: <PlayersList /> },
+      { path: "players/:id", element: <PlayerDetail /> },
 
       { path: "games", element: <GamesList /> },
 
@@ -29,6 +33,10 @@ export const router = createBrowserRouter([
       { path: "skill-levels", element: <SkillLevels /> },
       { path: "mentorship", element: <Mentorship /> },
       { path: "violations", element: <Violations /> },
+      { path: "analytics", element: <Analytics /> },
+      { path: "head-to-head", element: <HeadToHead /> },
+
+      
     ],
   },
 ]);

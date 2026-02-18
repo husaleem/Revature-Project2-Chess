@@ -27,8 +27,8 @@ type GameRead = {
   played_at: string;
 };
 
-// change only if your API runs on a different port
-const API_BASE = "http://localhost:8000";
+// Prefer env base if you have it, fallback to localhost
+const API_BASE = (import.meta as any)?.env?.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url);
@@ -44,8 +44,8 @@ function normResult(v: unknown) {
 }
 
 /**
- * You can tighten this once you paste your WinState enum values.
- * This version is defensive and won't crash on unknown values.
+ * Defensive: handles "DRAW", "TIE", "WHITE", "WHITE_WIN", "BLACK_WON", etc.
+ * Adjust once you're 100% sure of your WinState values.
  */
 function outcome(result: string) {
   const r = normResult(result);
@@ -70,8 +70,9 @@ export function useStandings() {
       setError(null);
       isRefresh ? setRefreshing(true) : setLoading(true);
 
+      // ✅ Updated players endpoint
       const [players, games] = await Promise.all([
-        getJson<PlayerRead[]>(`${API_BASE}/players/all`),
+        getJson<PlayerRead[]>(`${API_BASE}/players/search/all`),
         getJson<GameRead[]>(`${API_BASE}/games/all`),
       ]);
 
@@ -94,32 +95,59 @@ export function useStandings() {
         const whiteId = String(g.player_white_id);
         const blackId = String(g.player_black_id);
 
-        const white = map.get(whiteId);
-        const black = map.get(blackId);
-        if (!white || !black) continue;
+        // If a game references a player not in players list, still handle safely
+        if (!map.has(whiteId)) {
+          map.set(whiteId, {
+            player_id: whiteId,
+            first_name: "",
+            last_name: "",
+            rating: 0,
+            wins: 0,
+            losses: 0,
+            draws: 0,
+            games: 0,
+          });
+        }
+        if (!map.has(blackId)) {
+          map.set(blackId, {
+            player_id: blackId,
+            first_name: "",
+            last_name: "",
+            rating: 0,
+            wins: 0,
+            losses: 0,
+            draws: 0,
+            games: 0,
+          });
+        }
 
-        white.games += 1;
-        black.games += 1;
+        const w = map.get(whiteId)!;
+        const b = map.get(blackId)!;
 
-        const o = outcome(g.result);
+        const { draw, whiteWin, blackWin } = outcome(g.result);
 
-        if (o.draw) {
-          white.draws += 1;
-          black.draws += 1;
-        } else if (o.whiteWin && !o.blackWin) {
-          white.wins += 1;
-          black.losses += 1;
-        } else if (o.blackWin && !o.whiteWin) {
-          black.wins += 1;
-          white.losses += 1;
+        w.games += 1;
+        b.games += 1;
+
+        if (draw) {
+          w.draws += 1;
+          b.draws += 1;
+        } else if (whiteWin) {
+          w.wins += 1;
+          b.losses += 1;
+        } else if (blackWin) {
+          b.wins += 1;
+          w.losses += 1;
         } else {
-          // unknown WinState value -> do nothing except count games
+          // Unknown result value: count games only (already incremented)
+          // You can log once if you want:
+          // console.warn("Unknown game result:", g.result);
         }
       }
 
       setData(Array.from(map.values()));
     } catch (e: any) {
-      setError(e?.message ?? "Unknown error");
+      setError(e?.message ?? "Failed to load standings");
       setData(null);
     } finally {
       setLoading(false);

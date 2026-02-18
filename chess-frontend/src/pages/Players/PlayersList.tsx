@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Trash2 } from "lucide-react";
 import { api } from "../../api/client";
 import { usePlayers } from "../../hooks/use-players";
@@ -51,10 +52,7 @@ function getTagline(rating?: number) {
  * Matching uses SQL BETWEEN semantics:
  *   lower <= rating <= upper
  */
-function getSkillTitleFromRating(
-  rating?: number,
-  levels?: SkillLevelLike[] | null
-) {
+function getSkillTitleFromRating(rating?: number, levels?: SkillLevelLike[] | null) {
   if (rating == null) return "—";
   const r = Number(rating);
   if (!Number.isFinite(r)) return "—";
@@ -62,8 +60,7 @@ function getSkillTitleFromRating(
   if (!levels || levels.length === 0) return getRankLabelFallback(rating);
 
   const match = levels.find(
-    (s) =>
-      r >= Number(s.rating_lower_bound) && r <= Number(s.rating_upper_bound)
+    (s) => r >= Number(s.rating_lower_bound) && r <= Number(s.rating_upper_bound)
   );
 
   return match?.title ?? getRankLabelFallback(rating);
@@ -73,7 +70,6 @@ function getSkillTitleFromRating(
 function shortBadge(label: string) {
   const s = label.trim();
   if (!s) return "—";
-  // If it's one word, take first 2–3 letters; else take initials
   const parts = s.split(/\s+/).filter(Boolean);
   if (parts.length === 1) return parts[0].slice(0, 3).toUpperCase();
   return parts.map((p) => p[0].toUpperCase()).slice(0, 3).join("");
@@ -90,6 +86,7 @@ const inputStyle: React.CSSProperties = {
 };
 
 export default function PlayersList() {
+  const navigate = useNavigate();
   const { data, loading, error } = usePlayers();
   const { data: skillLevels } = useSkillLevels();
 
@@ -107,8 +104,7 @@ export default function PlayersList() {
       return normalize(full).includes(q);
     });
 
-    const byName = (p: any) =>
-      normalize(`${p.first_name ?? ""} ${p.last_name ?? ""}`.trim());
+    const byName = (p: any) => normalize(`${p.first_name ?? ""} ${p.last_name ?? ""}`.trim());
     const byRating = (p: any) => Number(p.rating ?? 0);
 
     return [...base].sort((a: any, b: any) => {
@@ -128,29 +124,15 @@ export default function PlayersList() {
   }, [data, query, sort]);
 
   if (loading) return <div style={{ padding: 16 }}>Loading players...</div>;
-  if (error)
-    return (
-      <div style={{ padding: 16, color: "salmon" }}>Error: {error}</div>
-    );
+  if (error) return <div style={{ padding: 16, color: "salmon" }}>Error: {error}</div>;
 
   return (
     <div style={{ padding: 16 }}>
       {/* Header row */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          gap: 12,
-        }}
-      >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 6 }}>
-            Players
-          </h1>
-          <div style={{ opacity: 0.75, fontSize: 13 }}>
-            Directory of all registered chess players.
-          </div>
+          <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 6 }}>Players</h1>
+          <div style={{ opacity: 0.75, fontSize: 13 }}>Directory of all registered chess players.</div>
         </div>
 
         <button
@@ -170,14 +152,7 @@ export default function PlayersList() {
       </div>
 
       {/* Search + Filter */}
-      <div
-        style={{
-          marginTop: 14,
-          display: "flex",
-          gap: 10,
-          alignItems: "center",
-        }}
-      >
+      <div style={{ marginTop: 14, display: "flex", gap: 10, alignItems: "center" }}>
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -225,9 +200,7 @@ export default function PlayersList() {
                 zIndex: 20,
               }}
             >
-              <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 8 }}>
-                Sort players
-              </div>
+              <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 8 }}>Sort players</div>
 
               <FilterItem
                 active={sort === "rating_desc"}
@@ -279,25 +252,36 @@ export default function PlayersList() {
             }}
           >
             {filtered.map((p: any) => {
-              const fullName =
-                `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() ||
-                "Unnamed Player";
+              const fullName = `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim() || "Unnamed Player";
               const rating = p.rating ?? "—";
               const playerId = String(p.player_id ?? "");
 
-              const rankTitle = getSkillTitleFromRating(
-                p.rating,
-                (skillLevels as any) ?? null
-              );
+              const rankTitle = getSkillTitleFromRating(p.rating, (skillLevels as any) ?? null);
 
               return (
                 <div
                   key={playerId || fullName}
+                  onClick={() => {
+                    if (!playerId) return;
+                    navigate(`/players/${playerId}`);
+                  }}
                   style={{
                     padding: 16,
                     borderRadius: 14,
                     border: "1px solid rgba(255,255,255,0.12)",
                     background: "rgba(255,255,255,0.03)",
+                    cursor: playerId ? "pointer" : "default",
+                    transition: "transform 120ms ease, background 120ms ease, border-color 120ms ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.05)";
+                    (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(168,85,247,0.35)";
+                    (e.currentTarget as HTMLDivElement).style.transform = "translateY(-1px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.03)";
+                    (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.12)";
+                    (e.currentTarget as HTMLDivElement).style.transform = "translateY(0px)";
                   }}
                 >
                   {/* Header */}
@@ -333,7 +317,7 @@ export default function PlayersList() {
                       </div>
                     </div>
 
-                    {/* Badge: now based on real rank title */}
+                    {/* Badge: based on real rank title */}
                     <span
                       title={rankTitle}
                       style={{
@@ -376,38 +360,22 @@ export default function PlayersList() {
 
                     <div>
                       <div style={{ opacity: 0.65, fontSize: 12 }}>RANK</div>
-                      <div
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 800,
-                          marginTop: 8,
-                        }}
-                      >
-                        {rankTitle}
-                      </div>
+                      <div style={{ fontSize: 13, fontWeight: 800, marginTop: 8 }}>{rankTitle}</div>
                     </div>
                   </div>
 
                   {/* Tagline */}
-                  <div style={{ opacity: 0.6, fontSize: 12, marginTop: 12 }}>
-                    {getTagline(p.rating)}
-                  </div>
+                  <div style={{ opacity: 0.6, fontSize: 12, marginTop: 12 }}>{getTagline(p.rating)}</div>
 
                   {/* Footer: bottom-right trash */}
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "flex-end",
-                      marginTop: 14,
-                    }}
-                  >
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 14 }}>
                     <button
                       title="Delete player"
-                      onClick={async () => {
+                      onClick={async (e) => {
+                        e.stopPropagation(); // ✅ prevents navigating when clicking trash
+
                         if (!playerId) return alert("Missing player id.");
-                        const ok = window.confirm(
-                          `Delete player "${fullName}"?\n\nThis cannot be undone.`
-                        );
+                        const ok = window.confirm(`Delete player "${fullName}"?\n\nThis cannot be undone.`);
                         if (!ok) return;
 
                         try {
@@ -446,7 +414,8 @@ export default function PlayersList() {
         />
       )}
 
-      {/* Debug (remove later) */}
+      {/* OPTIONAL: remove this debug block later */}
+      {/* 
       <pre
         style={{
           marginTop: 18,
@@ -460,6 +429,7 @@ export default function PlayersList() {
       >
         {JSON.stringify({ players: data, skill_levels: skillLevels }, null, 2)}
       </pre>
+      */}
     </div>
   );
 }
@@ -555,14 +525,7 @@ function AddPlayerModal({
           padding: 16,
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 12,
-          }}
-        >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
           <div style={{ fontSize: 18, fontWeight: 900 }}>Add Player</div>
           <button
             onClick={onClose}
@@ -581,19 +544,11 @@ function AddPlayerModal({
 
         <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
           <Field label="First Name">
-            <input
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              style={inputStyle}
-            />
+            <input value={firstName} onChange={(e) => setFirstName(e.target.value)} style={inputStyle} />
           </Field>
 
           <Field label="Last Name">
-            <input
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              style={inputStyle}
-            />
+            <input value={lastName} onChange={(e) => setLastName(e.target.value)} style={inputStyle} />
           </Field>
 
           <Field label="Rating">
@@ -608,14 +563,7 @@ function AddPlayerModal({
 
           {err && <div style={{ color: "salmon", fontSize: 13 }}>{err}</div>}
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: 10,
-              marginTop: 4,
-            }}
-          >
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 4 }}>
             <button
               onClick={onClose}
               disabled={submitting}
