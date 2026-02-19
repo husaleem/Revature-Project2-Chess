@@ -55,7 +55,7 @@ def delete_skill_level(
     svc.delete_skill_level(title)
     return
 
-#endpoint 6 - GET skill level by player id
+#GET skill level by player id (Business Model)
 @router.get("/lookup", response_model=dict)
 def lookup_skill_level(
     player_id: str,
